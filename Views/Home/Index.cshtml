@@ -33,7 +33,7 @@
 <body>
 
 <partial name="_StockNavigation" />
-@if (TempData["Notice"] is string notice) { <p class="stock-home-notice" role="status">@notice</p> }
+@if (OperationNotice.Text(Context.Request.Query["notice"].ToString()) is string notice) { <p class="stock-home-notice" role="status">@notice</p> }
     <!-- Public cinematic homepage hero. The fixed navbar remains above this pinned scene. -->
     <section class="sm-journey" id="home" aria-label="From chaos to intelligence">
         <div class="sm-journey__pin">

@@ -1,5 +1,5 @@
 using System.Net.Mail;
-using System.Security.Claims;
+using StockMind.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -126,11 +126,23 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
 
     public IActionResult Denied() => StatusCode(403);
 
-    private Task SignIn(User member) => HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(
-    [
-        new Claim(ClaimTypes.NameIdentifier, member.UserId.ToString()),
-        new Claim(ClaimTypes.Role, member.Role.RoleName)
-    ], "Cookies")));
+    private Task SignIn(User member) => HttpContext.SignInAsync(DatabaseIdentity.CreateTicket(member));
+
+    internal static async Task ResetPassword(IServiceProvider services, string email)
+    {
+        var password = Environment.GetEnvironmentVariable("STOCKMIND_PROVISION_PASSWORD");
+        if (password is null || password.Length is < 12 or > 128)
+            throw new ArgumentException("Set STOCKMIND_PROVISION_PASSWORD (12–128 characters).");
+        var canonicalEmail = email.Trim().ToLowerInvariant();
+        var db = services.GetRequiredService<StockMindDb>();
+        var member = await db.Users.SingleOrDefaultAsync(u => u.Email == canonicalEmail)
+            ?? throw new InvalidOperationException("No account matches this email.");
+        var hasher = services.GetRequiredService<IPasswordHasher<User>>();
+        member.PasswordHash = hasher.HashPassword(member, password);
+        member.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        Console.WriteLine("Password updated.");
+    }
 
     private static User Create(IPasswordHasher<User> hasher, Role role, string email, string name, string password)
     {
@@ -158,5 +170,3 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
         Console.WriteLine("Account created.");
     }
 }
-
-

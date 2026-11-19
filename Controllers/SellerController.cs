@@ -95,7 +95,7 @@ public sealed class SellerController(StockMindDb db) : StockController
 
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return Notice("Product saved and submitted for approval.", "Seller");
+        return Notice("product-submitted", "Seller");
     }
 
     [HttpPost]
@@ -131,7 +131,7 @@ public sealed class SellerController(StockMindDb db) : StockController
         var plan = await db.SubscriptionPlans.SingleOrDefaultAsync(p => p.PlanId == id && p.IsActive);
         if (plan is null) return NotFound();
         if (await db.Subscriptions.AnyAsync(s => s.SellerId == seller.SellerId && s.Status == "scheduled"))
-            return Notice("There is already a scheduled subscription.", "Seller", nameof(Plans));
+            return Notice("plan-scheduled", "Seller", nameof(Plans));
         var now = DateTime.UtcNow;
         var end = await db.Subscriptions.Where(s => s.SellerId == seller.SellerId && s.Status == "active" && s.EndAt > now)
             .MaxAsync(s => (DateTime?)s.EndAt);
@@ -143,7 +143,7 @@ public sealed class SellerController(StockMindDb db) : StockController
             PaymentMethod = "manual", PaymentStatus = "pending" });
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return Notice("Subscription requested. Contact support to arrange payment.", "Seller", nameof(Plans));
+        return Notice("plan-requested", "Seller", nameof(Plans));
     }
 
     public async Task<IActionResult> Insights()

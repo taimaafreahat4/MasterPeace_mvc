@@ -32,7 +32,7 @@ public sealed class AdminController(StockMindDb db) : StockController
             .SingleOrDefaultAsync(p => p.ProductId == id && p.Status != "archived");
         if (product is null) return NotFound();
         if (approve && product.Seller.VerificationStatus != "approved")
-            return Notice("Approve the seller before publishing their product.", "Admin", nameof(Products));
+            return Notice("seller-pending", "Admin", nameof(Products));
         product.ApprovalStatus = approve ? "approved" : "rejected";
         product.Status = approve ? "active" : "inactive";
         product.ReviewedAt = DateTime.UtcNow;
@@ -215,4 +215,3 @@ public sealed class AdminController(StockMindDb db) : StockController
         return RedirectToAction(nameof(Settings));
     }
 }
-

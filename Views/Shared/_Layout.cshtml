@@ -12,7 +12,7 @@
 <body>
 <partial name="_StockNavigation" />
 <main class="wrap main">
-@if (TempData["Notice"] is string notice) { <p class="notice" role="status">@notice</p> }
+@if (OperationNotice.Text(Context.Request.Query["notice"].ToString()) is string notice) { <p class="notice" role="status">@notice</p> }
 @RenderBody()
 </main>
 <partial name="_StockFooter" />

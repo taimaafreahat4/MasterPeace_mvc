@@ -1,6 +1,5 @@
-using System.Security.Claims;
+using StockMind.Security;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,27 +12,18 @@ builder.Services.AddControllersWithViews(options => options.Filters.Add(new Auto
 builder.Services.AddDbContext<StockMindDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("StockMind")));
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<DatabaseIdentity>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/Denied";
-    options.Cookie.Name = "StockMind.Auth";
+    options.Cookie.Name = "StockMind.Identity";
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    options.Events.OnValidatePrincipal = async context =>
-    {
-        var db = context.HttpContext.RequestServices.GetRequiredService<StockMindDb>();
-        if (!long.TryParse(context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
-            || !await db.Users.AnyAsync(u => u.UserId == id && u.AccountStatus == "active"
-                && u.Role.RoleName == context.Principal!.FindFirstValue(ClaimTypes.Role)
-               )
-            )
-        {
-            context.RejectPrincipal();
-            await context.HttpContext.SignOutAsync();
-        }
-    };
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = false;
+    options.EventsType = typeof(DatabaseIdentity);
 });
 builder.Services.AddRateLimiter(options =>
 {
@@ -48,6 +38,12 @@ if (args is ["provision", var role, var email, var name])
 {
     await using var scope = app.Services.CreateAsyncScope();
     await StockMind.Controllers.AccountController.Provision(scope.ServiceProvider, role, email, name);
+    return;
+}
+if (args is ["reset-password", var existingEmail])
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await StockMind.Controllers.AccountController.ResetPassword(scope.ServiceProvider, existingEmail);
     return;
 }
 if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Home/Error");

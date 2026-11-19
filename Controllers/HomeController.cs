@@ -38,7 +38,7 @@ public sealed class HomeController(StockMindDb db) : StockController
             DisplayName = form.Name, ContactEmail = form.Email, ApprovalStatus = "pending"
         });
         await db.SaveChangesAsync();
-        return Notice("Thanks for sharing your feedback.", "Home");
+        return Notice("feedback-submitted", "Home");
     }
 
     public IActionResult Help() => View();
@@ -57,7 +57,6 @@ public sealed class HomeController(StockMindDb db) : StockController
         db.SupportTickets.Add(new() { UserId = signedIn ? UserId : null, GuestEmail = signedIn ? null : email,
             Subject = subject, Message = message, TicketStatus = "open" });
         await db.SaveChangesAsync();
-        return Notice("Your support ticket was submitted.", "Home");
+        return Notice("ticket-submitted", "Home");
     }
 }
-

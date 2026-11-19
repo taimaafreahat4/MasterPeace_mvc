@@ -37,7 +37,7 @@ public sealed class PurchaseController(StockMindDb db) : StockController
             })
         });
         await db.SaveChangesAsync();
-        return Notice("Purchase analysis saved.", "Seller", "Insights");
+        return Notice("analysis-saved", "Seller", "Insights");
     }
 
     private async Task<IActionResult> Show(PurchaseForm form)
@@ -46,4 +46,3 @@ public sealed class PurchaseController(StockMindDb db) : StockController
         return View("Index", form);
     }
 }
-

@@ -30,7 +30,7 @@ public sealed class CartController(StockMindDb db) : StockController
             var listing = await Commerce.Available(db).SingleOrDefaultAsync(l => l.ListingId == id);
             var desired = quantity + (add ? item?.Quantity ?? 0 : 0);
             if (listing is null || !Commerce.InStock(listing, desired))
-                return Notice("That quantity is unavailable. Check the minimum and available stock.", "Cart");
+                return Notice("quantity-unavailable", "Cart");
 
             if (item is null)
             {
@@ -83,7 +83,7 @@ public sealed class CartController(StockMindDb db) : StockController
         {
             var listing = item.Listing;
             if (!available.Contains(item.ListingId) || !Commerce.InStock(listing, item.Quantity))
-                return Notice($"Stock changed for {listing.Product.ProductName}. Update your cart.", "Cart");
+                return Notice("stock-changed", "Cart");
 
             var inventory = listing.Product.Inventory!;
             var units = item.Quantity * Commerce.UnitsPerPurchase(listing);
@@ -105,7 +105,7 @@ public sealed class CartController(StockMindDb db) : StockController
         }
 
         if (order.Subtotal > 9_999_999_999.99m)
-            return Notice("This order exceeds the supported total. Split it into smaller orders.", "Cart");
+            return Notice("order-total-limit", "Cart");
         order.GrandTotal = order.Subtotal;
         order.Payments.Add(new Payment { UserId = UserId, Amount = order.GrandTotal,
             Currency = "JOD", PaymentMethod = "cash_on_delivery", PaymentStatus = "pending" });
@@ -122,4 +122,3 @@ public sealed class CartController(StockMindDb db) : StockController
         return RedirectToAction("Details", "Orders", new { id = order.OrderId });
     }
 }
-

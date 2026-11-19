@@ -6,9 +6,6 @@ namespace StockMind.Controllers;
 public abstract class StockController : Controller
 {
     protected long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    protected IActionResult Notice(string message, string controller, string action = "Index")
-    {
-        TempData["Notice"] = message;
-        return RedirectToAction(action, controller);
-    }
+    protected IActionResult Notice(string code, string controller, string action = "Index")
+        => RedirectToAction(action, controller, new { notice = code });
 }

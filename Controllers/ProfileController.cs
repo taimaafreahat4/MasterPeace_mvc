@@ -52,7 +52,7 @@ public sealed class ProfileController(StockMindDb db) : StockController
         member.UserPreference.MarketingNotifications = form.MarketingNotifications;
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return Notice("Profile saved.", "Profile");
+        return Notice("profile-saved", "Profile");
     }
 
     public async Task<IActionResult> Notifications() => View(await db.Notifications.Where(n => n.UserId == UserId)
@@ -65,4 +65,3 @@ public sealed class ProfileController(StockMindDb db) : StockController
         return RedirectToAction(nameof(Notifications));
     }
 }
-

@@ -7,12 +7,14 @@ namespace StockMind.Controllers;
 
 public sealed class MarketController(StockMindDb db) : StockController
 {
-    public async Task<IActionResult> Index(string? q, int? category, string? categoryName, string sort = "recommended", bool trends = false)
+    public async Task<IActionResult> Index(string? q, int? category, string? categoryName, string sort = "recommended", bool trends = false, string? offer = null)
     {
         ViewBag.CategoryName = category.HasValue
             ? await db.Categories.Where(c => c.CategoryId == category).Select(c => c.CategoryName).SingleOrDefaultAsync()
             : categoryName;
         ViewBag.Query = q;
+        ViewBag.Offer = offer;
+        ViewBag.Categories = await db.Categories.AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.CategoryName).Select(c => c.CategoryName).ToListAsync();
         ViewBag.Sort = sort;
         ViewBag.Trends = trends;
         ViewBag.Favorites = User.IsInRole("buyer")
@@ -23,6 +25,8 @@ public sealed class MarketController(StockMindDb db) : StockController
             listings = listings.Where(l => l.Product.ProductName.Contains(q.Trim()) || l.Product.Seller.StoreName.Contains(q.Trim()));
         if (category.HasValue) listings = listings.Where(l => l.Product.CategoryId == category);
         else if (!string.IsNullOrWhiteSpace(categoryName)) listings = listings.Where(l => l.Product.Category.CategoryName == categoryName);
+
+        if (offer is "regular" or "whole_lot") listings = listings.Where(l => l.SellingMethod == offer);
 
         var sorted = trends ? listings.OrderByDescending(l => l.OrderItems.Where(i => i.Order.OrderStatus != "cancelled").Sum(i => (long?)i.Quantity) ?? 0) : sort switch
         {
@@ -61,5 +65,6 @@ public sealed class MarketController(StockMindDb db) : StockController
         return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl) : RedirectToAction(nameof(Favorites));
     }
 }
+
 
 

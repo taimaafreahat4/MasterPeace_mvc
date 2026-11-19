@@ -61,7 +61,7 @@ var originalRoutes = new Dictionary<string, string>
     ["/cart/cart.html"] = "/Cart",
     ["/checkout/checkout.html"] = "/Cart/Checkout",
     ["/profile/profile.html"] = "/Profile/Edit",
-    ["/settings/settings.html"] = "/Profile",
+    ["/settings/settings.html"] = "/Settings",
     ["/admin/dashboard/dashboard.html"] = "/Admin",
     ["/admin/products/products.html"] = "/Admin/Products",
     ["/admin/users/users.html"] = "/Admin/Users",
@@ -86,6 +86,7 @@ foreach (var (original, destination) in originalRoutes)
 
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 app.Run();
+
 
 
 

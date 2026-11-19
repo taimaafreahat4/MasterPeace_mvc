@@ -18,7 +18,7 @@ public sealed class CartController(StockMindDb db) : StockController
     public async Task<IActionResult> Index() => View(await Items.ToListAsync());
 
     [HttpPost]
-    public async Task<IActionResult> Set(long id, int quantity, bool add = false)
+    public async Task<IActionResult> Set(long id, int quantity, bool add = false, bool checkout = false)
     {
         if (!ModelState.IsValid || quantity < 0 || quantity > 100000) return BadRequest();
         await using var transaction = await Commerce.Lock(db);
@@ -30,7 +30,7 @@ public sealed class CartController(StockMindDb db) : StockController
         else
         {
             var listing = await Commerce.Available(db).SingleOrDefaultAsync(l => l.ListingId == id);
-            var desired = quantity + (add ? item?.Quantity ?? 0 : 0);
+            var desired = quantity + (add || checkout ? item?.Quantity ?? 0 : 0);
             if (listing is null || !Commerce.InStock(listing, desired))
                 return Notice("quantity-unavailable", "Cart");
 
@@ -49,7 +49,7 @@ public sealed class CartController(StockMindDb db) : StockController
         }
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(checkout && quantity > 0 ? nameof(Checkout) : nameof(Index));
     }
 
     public async Task<IActionResult> Checkout()
@@ -138,6 +138,7 @@ public sealed class CartController(StockMindDb db) : StockController
         return RedirectToAction("Confirmation", "Orders", new { id = order.OrderId });
     }
 }
+
 
 
 

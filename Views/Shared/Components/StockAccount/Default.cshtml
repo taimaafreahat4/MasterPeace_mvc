@@ -30,8 +30,9 @@ else
             }
             @if (User.IsInRole("admin")) { <a asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-table-cells"></i> Administration</a> }
             <a asp-controller="Profile" asp-action="Edit"><i class="fa-solid fa-pencil"></i> Edit Profile</a>
-            <a asp-controller="Profile" asp-action="Index"><i class="fa-solid fa-gear"></i> Settings</a>
+            <a asp-controller="Settings" asp-action="Index"><i class="fa-solid fa-gear"></i> Settings</a>
             <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</button></form>
         </div>
     </details>
 }
+

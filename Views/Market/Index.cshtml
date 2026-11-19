@@ -125,25 +125,45 @@
 
 
 <section class="products-section">
-    <form class="market-toolbar" method="get" asp-action="Index">
-        <input type="hidden" name="categoryName" value="@selected">
-        <label class="sort-control"><span>Sort By</span>
+    <form class="storefront-filters" method="get" asp-action="Index">
+        <label class="storefront-search">Search
+            <input name="q" type="search" value="@ViewBag.Query" placeholder="Product or store">
+        </label>
+        <label>Category
+            <select name="categoryName">
+                <option value="">All categories</option>
+                @if (selected is not null && !((List<string>)ViewBag.Categories).Contains(selected))
+                { <option value="@selected" selected>@selected</option> }
+                @foreach (var name in (List<string>)ViewBag.Categories)
+                { <option value="@name" selected="@(selected == name)">@name</option> }
+            </select>
+        </label>
+        <label>Offer type
+            <select name="offer">
+                <option value="">All offers</option>
+                <option value="regular" selected="@(ViewBag.Offer == "regular")">By quantity</option>
+                <option value="whole_lot" selected="@(ViewBag.Offer == "whole_lot")">Whole lot</option>
+            </select>
+        </label>
+        <label>Sort by
             <select name="sort" aria-label="Sort products">
                 @foreach (var option in new[] { ("recommended", "Recommended"), ("price-low", "Price: Low to High"), ("price-high", "Price: High to Low"), ("name", "Name") })
                 { <option value="@option.Item1" selected="@(ViewBag.Sort == option.Item1)">@option.Item2</option> }
             </select>
         </label>
-        <button class="trends-button" name="trends" value="true" aria-pressed="@(ViewBag.Trends == true ? "true" : "false")">✦ Trends</button>
-        <input class="market-search-field" name="q" type="search" value="@ViewBag.Query" placeholder="Search products" aria-label="Search products">
-        <button class="trends-button">Apply</button>
-        <a asp-action="Index">All products</a>
-        <span class="results-count">@Model.Count @(Model.Count == 1 ? "product" : "products")</span>
+        <button class="storefront-submit">Apply</button>
     </form>
+    <div class="storefront-results">
+        <strong>@Model.Count @(Model.Count == 1 ? "product" : "products")</strong>
+        <a asp-action="Index" asp-route-categoryName="@selected" asp-route-q="@ViewBag.Query" asp-route-offer="@ViewBag.Offer" asp-route-trends="true" class="storefront-chip">✦ Trends</a>
+        @if (selected is not null || ViewBag.Query is not null || ViewBag.Offer is not null || ViewBag.Trends == true)
+        { <a asp-action="Index" class="storefront-reset">Clear filters</a> }
+    </div>
     @if (Model.Count == 0) { <p class="market-empty">No products in this category yet.</p> }
     <div class="products-grid">
     @foreach (var listing in Model)
     {
-        <article class="product-card">
+        <article class="product-card storefront-card">
             <div class="product-image">
                 <a asp-action="Details" asp-route-id="@listing.ListingId" aria-label="View @listing.Product.ProductName"><partial name="_Photo" model="listing.Product" /></a>
                 @if (ViewBag.Trends == true) { <span class="stock-trend-label">✦ Trends</span> }
@@ -166,7 +186,8 @@
             <div class="product-info">
                 <h2><a asp-action="Details" asp-route-id="@listing.ListingId">@listing.Product.ProductName</a></h2>
                 <p>@listing.Product.Seller.StoreName</p>
-                <strong>JOD @Commerce.Price(listing).ToString("N2")</strong>
+                @if (listing.Product.Sku?.StartsWith("SM-DEMO-", StringComparison.Ordinal) == true) { <span class="storefront-demo">Demo</span> }
+                <strong class="storefront-price">JOD @Commerce.Price(listing).ToString("N2") <small>@(listing.SellingMethod == "whole_lot" ? "per lot" : "per unit")</small></strong>
                 <p>@(listing.SellingMethod == "whole_lot" ? $"Whole lot · {listing.LotUnits} units" : $"Minimum order: {listing.MinOrderQuantity} units")</p>
             </div>
         </article>
@@ -177,4 +198,5 @@
 <partial name="_StockFooter" />
 </body>
 </html>
+
 

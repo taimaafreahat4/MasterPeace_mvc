@@ -1,18 +1,19 @@
 @model Listing
 @{ ViewData["Title"] = Model.Product.ProductName; }
-<div class="details"><partial name="_Photo" model="Model.Product" />
+<p><a asp-action="Index" asp-route-categoryName="@Model.Product.Category.CategoryName">← Back to marketplace</a></p>
+<div class="details product-shopping-details"><partial name="_Photo" model="Model.Product" />
 <div><p class="pill">@Model.Product.Category.CategoryName</p><h1>@Model.Product.ProductName</h1>
 <p class="muted">@Model.Product.Seller.StoreName · @Model.Product.ProductCondition</p>
 <p>@Model.Product.Description</p><p class="price">@Commerce.Price(Model).ToString("N2") JOD @(Model.SellingMethod == "whole_lot" ? $"per lot of {Model.LotUnits}" : "per unit")</p>
-<p>@Model.ListingQuantity units available · Minimum @Commerce.Minimum(Model) @(Model.SellingMethod == "whole_lot" ? "lot" : "units")</p>
+<p>@Math.Min(Model.ListingQuantity, Model.Product.Inventory?.AvailableQuantity ?? 0) units available · Minimum @Commerce.Minimum(Model) @(Model.SellingMethod == "whole_lot" ? "lot" : "units")</p>
 @if (User.IsInRole("buyer"))
 {
     <div class="row">
     @if (Commerce.InStock(Model, Commerce.Minimum(Model)))
     {
         <form class="inline" asp-controller="Cart" asp-action="Set" asp-route-id="@Model.ListingId" method="post">
-        <input type="number" name="quantity" min="@Commerce.Minimum(Model)" max="@(Model.SellingMethod == "whole_lot" ? 1 : Model.ListingQuantity)" value="@Commerce.Minimum(Model)" aria-label="Quantity" required>
-        <button name="add" value="true">Add to cart</button></form>
+        <input type="number" name="quantity" min="@Commerce.Minimum(Model)" max="@(Model.SellingMethod == "whole_lot" ? 1 : Math.Min(Model.ListingQuantity, Model.Product.Inventory?.AvailableQuantity ?? 0))" value="@Commerce.Minimum(Model)" aria-label="Quantity" required>
+        <button name="add" value="true">Add to cart</button><button class="outline" name="checkout" value="true">Add &amp; checkout</button></form>
     }
     <form asp-action="Favorite" asp-route-id="@Model.ListingId" method="post"><button class="quiet">Save to favorites</button></form>
     </div>

@@ -1,0 +1,20 @@
+@model PreferencesForm
+@{ ViewData["Title"] = "Settings"; }
+<div class="settings-heading">
+    <div><h1>Settings</h1><p>Choose which updates you receive from Stock Mind.</p></div>
+    <a class="button outline" asp-controller="Profile" asp-action="Edit">Edit profile</a>
+</div>
+<div class="settings-workspace">
+    <nav class="panel settings-nav" aria-label="Account settings">
+        <a href="#notifications" aria-current="page"><i class="fa-regular fa-bell"></i> Notifications</a>
+        <a asp-controller="Profile" asp-action="Edit"><i class="fa-regular fa-user"></i> Profile</a>
+    </nav>
+    <form class="panel settings-panel" id="notifications" asp-action="Index" method="post">
+        <h2>Notification preferences</h2>
+        <div asp-validation-summary="All"></div>
+        <label class="settings-option"><span><strong>Order updates</strong><small>Get a notification when you place a new order.</small></span><input asp-for="OrderNotifications"></label>
+        <label class="settings-option"><span><strong>Shipping updates</strong><small>Get a notification when your shipment status changes.</small></span><input asp-for="ShippingNotifications"></label>
+        <label class="settings-option"><span><strong>Marketing preferences</strong><small>Allow promotional updates from Stock Mind.</small></span><input asp-for="MarketingNotifications"></label>
+        <button class="button">Save preferences</button>
+    </form>
+</div>

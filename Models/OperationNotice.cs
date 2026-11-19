@@ -8,6 +8,7 @@ public static class OperationNotice
         "plan-scheduled" => "There is already a scheduled subscription.",
         "plan-requested" => "Subscription requested. Contact support to arrange payment.",
         "analysis-saved" => "Purchase analysis saved.",
+        "settings-saved" => "Your preferences were saved.",
         "profile-saved" => "Profile saved.",
         "ticket-submitted" => "Your support ticket was submitted.",
         "quantity-unavailable" => "That quantity is unavailable. Check the minimum and available stock.",
@@ -17,4 +18,5 @@ public static class OperationNotice
         _ => null
     };
 }
+
 

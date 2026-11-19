@@ -53,5 +53,43 @@ app.UseRouting();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+var originalRoutes = new Dictionary<string, string>
+{
+    ["/buyer-dashboard/dashboard.html"] = "/Buyer",
+    ["/category/category.html"] = "/Market",
+    ["/favorite/favorite.html"] = "/Market/Favorites",
+    ["/cart/cart.html"] = "/Cart",
+    ["/checkout/checkout.html"] = "/Cart/Checkout",
+    ["/checkout/tracking/tracking.html"] = "/Orders",
+    ["/checkout/confirmation/confirmation.html"] = "/Orders",
+    ["/checkout/feedback/feedback.html"] = "/Orders",
+    ["/profile/profile.html"] = "/Profile/Edit",
+    ["/settings/settings.html"] = "/Profile",
+    ["/admin/dashboard/dashboard.html"] = "/Admin",
+    ["/admin/products/products.html"] = "/Admin/Products",
+    ["/admin/users/users.html"] = "/Admin/Users",
+    ["/admin/sellers/sellers.html"] = "/Admin/Sellers",
+    ["/admin/orders/orders.html"] = "/Orders",
+    ["/admin/settings/settings.html"] = "/Admin/Settings",
+    ["/admin/profile/profile.html"] = "/Profile",
+    ["/seller/stockmind_seller_center/dashboard.html"] = "/Seller",
+    ["/seller/stockmind_seller_center/inventory.html"] = "/Seller/Listings",
+    ["/seller/stockmind_seller_center/marketplace.html"] = "/Seller/Listings",
+    ["/seller/stockmind_seller_center/add-product.html"] = "/Seller/Edit",
+    ["/seller/stockmind_seller_center/ai-tools.html"] = "/Seller/Tools",
+    ["/seller/stockmind_seller_center/ai-advisor.html"] = "/Purchase",
+    ["/seller/stockmind_seller_center/recommendations.html"] = "/Seller/Insights",
+    ["/seller/stockmind_seller_center/subscription.html"] = "/Seller/Plans",
+    ["/seller/stockmind_seller_center/subscription-payment.html"] = "/Seller/Plans",
+    ["/seller/stockmind_seller_center/subscription-confirmation.html"] = "/Seller/Plans",
+    ["/seller/stockmind_seller_center/store-profile.html"] = "/Seller/StoreProfile"
+};
+foreach (var (original, destination) in originalRoutes)
+    app.MapGet(original, () => Results.Redirect(destination));
+
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 app.Run();
+
+
+
+

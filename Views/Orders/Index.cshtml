@@ -1,5 +1,5 @@
 @model IEnumerable<Order>
-@{ ViewData["Title"] = "Orders"; }
+@{ if (User.IsInRole("admin")) Layout = "_AdminWorkspace"; ViewData["Title"] = "Orders"; }
 <h1>@(User.IsInRole("admin") ? "Orders" : "Your orders")</h1>
 @if (!Model.Any()) { <p class="panel empty">No orders yet.</p> }
 else

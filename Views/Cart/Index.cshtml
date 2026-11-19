@@ -1,18 +1,162 @@
-@model IEnumerable<CartItem>
-@{ ViewData["Title"] = "Cart"; }
-<h1>Your cart</h1>
-@if (!Model.Any()) { <p class="panel empty">Your cart is empty. <a asp-controller="Market" asp-action="Index">Browse products</a></p> }
-else
-{
-<div class="table-wrap"><table><thead><tr><th>Product</th><th>Unit / lot price</th><th>Quantity</th><th>Amount</th></tr></thead><tbody>
-@foreach (var item in Model)
-{
-<tr><td>@item.Listing.Product.ProductName</td><td>@Commerce.Price(item.Listing).ToString("N2") JOD</td><td>
-<div class="inline"><form class="inline" asp-action="Set" asp-route-id="@item.ListingId" method="post">
-<input type="number" name="quantity" value="@item.Quantity" min="@Commerce.Minimum(item.Listing)" aria-label="Quantity" required><button class="quiet">Update</button></form>
-<form asp-action="Set" asp-route-id="@item.ListingId" method="post"><button class="danger" name="quantity" value="0">Remove</button></form></div></td>
-<td>@((Commerce.Price(item.Listing) * item.Quantity).ToString("N2")) JOD</td></tr>
+@model IReadOnlyList<CartItem>
+@{
+    Layout = null;
+    var subtotal = Model.Sum(item => Commerce.Price(item.Listing) * item.Quantity);
 }
-</tbody></table></div>
-<div class="panel row between"><strong>Subtotal @Model.Sum(i => Commerce.Price(i.Listing) * i.Quantity).ToString("N2") JOD</strong><a class="button" asp-action="Checkout">Checkout</a></div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#061735">
+
+    <title>Stock Mind | Shopping Cart</title>
+
+    <link rel="stylesheet" href="/cart/cart.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+
+<body>
+
+    <partial name="_StockNavigation" />
+
+    <main class="cart-page">
+
+        <header class="cart-heading">
+            <div>
+                <span class="eyebrow">YOUR WHOLESALE ORDER</span>
+                <h1>Shopping <span>Cart</span></h1>
+                <p>Review your products and quantities before checkout.</p>
+            </div>
+
+            <a class="continue-link" href="/Market">
+                <span>←</span> Continue shopping
+            </a>
+        </header>
+
+        <div class="cart-layout">
+
+            <section class="cart-panel">
+
+                <div class="panel-heading">
+                    <div>
+                        <h2>Your items</h2>
+                        <p id="productCount">@Model.Count products</p>
+                    </div>
+
+                    <span class="wholesale-badge">
+                        Wholesale
+                    </span>
+                </div>
+
+                <div id="cartItems" class="cart-items">
+    @foreach (var item in Model)
+    {
+        var listing = item.Listing;
+        <article class="cart-item">
+            <div class="cart-item-info">
+                <h3 class="cart-item-name">@listing.Product.ProductName</h3>
+                <p>@Commerce.Price(listing).ToString("N2") JOD @(listing.SellingMethod == "whole_lot" ? "per lot" : "per unit")</p>
+            </div>
+            <form class="quantity-control" asp-action="Set" asp-route-id="@listing.ListingId" method="post">
+                <input aria-label="Quantity" type="number" name="quantity" min="@Commerce.Minimum(listing)" value="@item.Quantity" required>
+                <button class="quantity-button" type="submit" aria-label="Update quantity">✓</button>
+            </form>
+            <strong>@((Commerce.Price(listing) * item.Quantity).ToString("N2")) JOD</strong>
+            <form asp-action="Set" asp-route-id="@listing.ListingId" method="post">
+                <button class="remove-button" name="quantity" value="0" aria-label="Remove item">×</button>
+            </form>
+        </article>
+    }
+</div>
+
+                <section id="emptyCart" class="empty-cart" hidden="@(Model.Count != 0)">
+                    <div class="empty-icon">🛍</div>
+
+                    <h2>Your cart is empty</h2>
+
+                    <p>
+                        Discover products from our marketplace
+                        and build your wholesale order.
+                    </p>
+
+                    <a href="/Market" class="primary-button">
+                        Explore products <span>→</span>
+                    </a>
+                </section>
+
+                <p id="cartNotice" class="cart-notice" role="status">@OperationNotice.Text(Context.Request.Query["notice"].ToString())</p>
+
+            </section>
+
+            <aside class="order-summary">
+
+                <div class="summary-heading">
+                    <div>
+                        <span class="eyebrow">ORDER OVERVIEW</span>
+                        <h2>Order summary</h2>
+                    </div>
+
+                    <div class="summary-icon">▤</div>
+                </div>
+
+                <div class="summary-line">
+    <span>Products subtotal</span>
+    <strong id="subtotal">JOD @subtotal.ToString("N2")</strong>
+</div>
+
+
+<div class="summary-line commission-line">
+
+    <span>
+        Service fee
+    </span>
+
+    <strong id="commission">
+        JOD 0.00
+    </strong>
+
+</div>
+
+
+<div class="summary-line">
+    <span>Shipping</span>
+    <strong id="shipping">JOD 0.00</strong>
+</div>
+
+                <div class="summary-divider"></div>
+
+                <div class="total-line">
+    <span>Estimated total</span>
+    <strong id="total">JOD @subtotal.ToString("N2")</strong>
+</div>
+
+                <p class="summary-note">
+                    Shipping costs and final pricing will be
+                    confirmed before the order is placed.
+                </p>
+
+                @if (Model.Count > 0)
+{
+    <a id="checkoutButton" class="primary-button checkout-button" asp-action="Checkout">Proceed to checkout <span>→</span></a>
 }
+
+                <div class="summary-features">
+                    <p><span>✓</span> Wholesale quantities</p>
+                    <p><span>✓</span> Review before confirming</p>
+                </div>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+    <partial name="_StockFooter" />
+</body>
+</html>
+

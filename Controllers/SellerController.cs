@@ -15,6 +15,15 @@ public sealed class SellerController(StockMindDb db) : StockController
 
     public async Task<IActionResult> Index()
     {
+        var listings = await db.Listings.AsNoTracking().Include(l => l.Product.Category)
+            .Where(l => l.Product.Seller.UserId == UserId && l.Product.Status != "archived" && l.Status != "archived")
+            .OrderByDescending(l => l.ListingId).ToListAsync();
+        var active = await Commerce.Available(db).Where(l => l.Product.Seller.UserId == UserId && l.ListingQuantity > 0).ToListAsync();
+        return View(new SellerDashboard(active, listings));
+    }
+
+    public async Task<IActionResult> Listings()
+    {
         ViewBag.Seller = await db.SellerProfiles.SingleAsync(s => s.UserId == UserId);
         return View(await Products.OrderByDescending(p => p.CreatedAt).ToListAsync());
     }
@@ -95,7 +104,7 @@ public sealed class SellerController(StockMindDb db) : StockController
 
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return Notice("product-submitted", "Seller");
+        return Notice("product-submitted", "Seller", nameof(Listings));
     }
 
     [HttpPost]
@@ -146,6 +155,39 @@ public sealed class SellerController(StockMindDb db) : StockController
         return Notice("plan-requested", "Seller", nameof(Plans));
     }
 
+    public async Task<IActionResult> StoreProfile()
+    {
+        var seller = await db.SellerProfiles.SingleAsync(s => s.UserId == UserId);
+        return View(new StoreProfileForm
+        {
+            StoreName = seller.StoreName, BusinessCategory = seller.BusinessCategory ?? "",
+            LocationDetails = seller.LocationDetails ?? "", City = seller.City ?? "",
+            Country = seller.Country ?? "", StoreType = seller.StoreType ?? "",
+            TargetCustomers = seller.TargetCustomers ?? "", AverageVisitorsPerDay = seller.AverageVisitorsPerDay,
+            Description = seller.Description
+        });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> StoreProfile(StoreProfileForm form)
+    {
+        if (!ModelState.IsValid) return View(form);
+        var seller = await db.SellerProfiles.SingleAsync(s => s.UserId == UserId);
+        seller.StoreName = form.StoreName.Trim();
+        seller.BusinessCategory = form.BusinessCategory;
+        seller.LocationDetails = form.LocationDetails;
+        seller.City = form.City;
+        seller.Country = form.Country;
+        seller.StoreType = form.StoreType;
+        seller.TargetCustomers = form.TargetCustomers;
+        seller.AverageVisitorsPerDay = form.AverageVisitorsPerDay;
+        seller.Description = form.Description;
+        await db.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Tools() => View();
+
     public async Task<IActionResult> Insights()
     {
         var seller = await db.SellerProfiles.SingleAsync(s => s.UserId == UserId);
@@ -181,3 +223,7 @@ public sealed class SellerController(StockMindDb db) : StockController
     internal static bool SafeImage(string url) => (url.StartsWith("/catalog/", StringComparison.Ordinal) && !url.Contains("..") && !url.Contains('\\'))
         || Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == "https";
 }
+
+
+
+

@@ -52,7 +52,9 @@ public sealed class CartController(StockMindDb db) : StockController
 
     public async Task<IActionResult> Checkout()
     {
-        if (!await Items.AnyAsync()) return RedirectToAction(nameof(Index));
+        var items = await Items.ToListAsync();
+        if (items.Count == 0) return RedirectToAction(nameof(Index));
+        await ShowCheckoutSummary(items);
         var address = await db.Addresses.FirstOrDefaultAsync(a => a.UserId == UserId && a.IsDefault);
         return View(address is null ? new ShippingForm() : new ShippingForm
         {
@@ -61,10 +63,19 @@ public sealed class CartController(StockMindDb db) : StockController
         });
     }
 
+    private async Task ShowCheckoutSummary(IReadOnlyList<CartItem> items)
+    {
+        ViewBag.Items = items;
+        ViewBag.BuyerEmail = await db.Users.Where(u => u.UserId == UserId).Select(u => u.Email).SingleAsync();
+    }
     [HttpPost]
     public async Task<IActionResult> Checkout(ShippingForm form)
     {
-        if (!ModelState.IsValid) return View(form);
+        if (!ModelState.IsValid)
+        {
+            await ShowCheckoutSummary(await Items.ToListAsync());
+            return View(form);
+        }
         await using var transaction = await Commerce.Lock(db);
         var items = await Items.OrderBy(i => i.ListingId).ToListAsync();
         if (items.Count == 0) return RedirectToAction(nameof(Index));
@@ -122,3 +133,6 @@ public sealed class CartController(StockMindDb db) : StockController
         return RedirectToAction("Details", "Orders", new { id = order.OrderId });
     }
 }
+
+
+

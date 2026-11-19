@@ -1,10 +1,50 @@
 @model IEnumerable<User>
 @{ ViewData["Title"] = "Users and sellers"; }
-<h1>Users and sellers</h1><partial name="_Nav" />
-<div class="table-wrap"><table><thead><tr><th>Account</th><th>Role</th><th>Account status</th><th>Seller verification</th></tr></thead><tbody>
+<header class="page-header">
+
+
+<div>
+
+<span class="admin-page-eyebrow">USER MANAGEMENT</span>
+<h1>
+Users Management
+</h1>
+
+<p>
+Manage buyers and sellers accounts
+</p>
+
+</div>
+
+
+
+<div class="admin-profile"><span class="admin-avatar" aria-hidden="true">SM</span><span>Administrator</span></div>
+
+
+
+</header>
+<section class="controls">
+    <input data-workspace-search type="search" aria-label="Search users" placeholder="Search users...">
+    <select data-workspace-filter aria-label="Filter users">
+        <option value="all">All Users</option>
+        <option value="buyer">Buyers</option>
+        <option value="seller">Sellers</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+    </select>
+</section>
+<section class="stats">
+    <article class="stat-card"><div class="stat-icon"><i class="bi bi-people"></i></div><div><h2>@(Model.Count())</h2><p>All users</p></div></article>
+    <article class="stat-card"><div class="stat-icon"><i class="bi bi-person-check"></i></div><div><h2>@(Model.Count(item => item.AccountStatus == "active"))</h2><p>Active users</p></div></article>
+    <article class="stat-card"><div class="stat-icon"><i class="bi bi-person"></i></div><div><h2>@(Model.Count(item => item.Role.RoleName == "buyer"))</h2><p>Buyers</p></div></article>
+    <article class="stat-card"><div class="stat-icon"><i class="bi bi-person-x"></i></div><div><h2>@(Model.Count(item => item.AccountStatus == "suspended"))</h2><p>Suspended</p></div></article>
+</section>
+<section class="table-container">
+    <div class="table-header"><h2>Users list</h2></div>
+    <div class="table-wrap"><table><thead><tr><th>Account</th><th>Role</th><th>Account status</th><th>Seller verification</th></tr></thead><tbody data-workspace-rows>
 @foreach (var member in Model)
 {
-<tr><td><strong>@member.FullName</strong><br><small>@member.Email</small></td><td>@member.Role.RoleName</td>
+<tr data-filter="@member.Role.RoleName @member.AccountStatus"><td><strong>@member.FullName</strong><br><small>@member.Email</small></td><td>@member.Role.RoleName</td>
 <td><div class="inline"><span class="pill">@member.AccountStatus</span>
 @if (member.Role.RoleName != "admin")
 {
@@ -21,3 +61,5 @@
 </td></tr>
 }
 </tbody></table></div>
+</section>
+<script defer src="/admin/components/mvc-table-filter.js"></script>

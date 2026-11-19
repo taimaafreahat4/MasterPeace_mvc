@@ -1,13 +1,87 @@
 @model ShippingForm
-@{ ViewData["Title"] = "Checkout"; }
-<h1>Checkout</h1>
-<form class="panel form" asp-action="Checkout" method="post">
-<div asp-validation-summary="All"></div>
-<h2>Delivery address</h2>
-<label>Recipient name <input asp-for="Name" autocomplete="name"></label>
-<label>Phone <input asp-for="Phone" type="tel" autocomplete="tel"></label>
-<label>Country <input asp-for="Country" autocomplete="country-name"></label>
-<label>City <input asp-for="City" autocomplete="address-level2"></label>
-<label>Street address <textarea asp-for="Address" autocomplete="street-address"></textarea></label>
-<p>Payment method <strong>Cash on delivery</strong></p><button>Place order</button>
-</form>
+@{
+    Layout = null;
+    var items = (IReadOnlyList<CartItem>)ViewBag.Items;
+    var subtotal = items.Sum(item => Commerce.Price(item.Listing) * item.Quantity);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#061735">
+  <title>Stock Mind | Secure checkout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/stock-brand.css">
+  <link rel="stylesheet" href="/components/footer.css">
+  <link rel="stylesheet" href="/checkout/checkout.css">
+  <link rel="stylesheet" href="/checkout/checkout-polish.css">
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+<body>
+  <partial name="_StockNavigation" />
+  <main class="checkout-page">
+    <a href="/Cart" class="back-to-cart"><span aria-hidden="true">←</span> Back to cart</a>
+    <div class="breadcrumb"><a href="../home/index.html">Home</a><span>›</span><a href="/Cart">Cart</a><span>›</span><strong>Checkout</strong></div>
+    <header class="page-heading">
+      <div><p class="eyebrow">ORDER DETAILS</p><h1>Checkout</h1><p class="subheading">Delivery information and payment method</p></div>
+      <div class="secure-label"><span aria-hidden="true">✓</span><span><strong>Protected checkout</strong><small>Demo transaction · no live card charge</small></span></div>
+    </header>
+
+    <ol class="checkout-progress" aria-label="Checkout steps">
+      <li class="is-complete"><span>✓</span><div><strong>Cart</strong><small>Items selected</small></div></li>
+      <li class="is-active"><span>2</span><div><strong>Delivery &amp; payment</strong><small>Enter your details</small></div></li>
+      <li><span>3</span><div><strong>Confirmation</strong><small>Review your order</small></div></li>
+    </ol>
+
+    <div class="checkout-layout">
+      <form id="checkoutForm" class="checkout-form delivery-card" asp-action="Checkout" method="post">
+        <section class="checkout-panel">
+          <div class="panel-heading"><span class="step">01</span><div><h2>Delivery information</h2><p>We’ll use these details for this order.</p></div></div>
+          <div class="form-grid">
+            <label class="full">Full name<input id="fullName" asp-for="Name" autocomplete="name" required minlength="2" maxlength="90" placeholder="Enter your full name"></label>
+            <label>Email address<input type="email" value="@ViewBag.BuyerEmail" disabled></label>
+            <label>Phone number<input id="phone" asp-for="Phone" autocomplete="tel" type="tel" required inputmode="tel" maxlength="22" placeholder="+962 7X XXX XXXX" aria-describedby="phoneHint"><small class="field-hint" id="phoneHint">Use 8–15 digits, including your country code.</small></label>
+            <label class="full">Delivery address<input id="address" asp-for="Address" autocomplete="street-address" required minlength="6" maxlength="180" placeholder="Street, building, floor or apartment"></label>
+            <label>City<input id="city" asp-for="City" autocomplete="address-level2" required minlength="2" maxlength="70" placeholder="City"></label>
+            <label>Country<select id="country" asp-for="Country" autocomplete="country-name" required><option value="">Choose a country</option><option value="Jordan">Jordan</option><option value="Saudi Arabia">Saudi Arabia</option><option value="United Arab Emirates">United Arab Emirates</option><option value="Other">Other</option></select></label>
+            
+          </div>
+        </section>
+
+        <section class="checkout-panel">
+          <div class="panel-heading"><span class="step">02</span><div><h2>Payment method</h2><p>Choose how you’d like to complete this demo order.</p></div></div>
+          <div class="payment-options">
+            <label class="payment-option"><input type="radio" name="paymentMethod" value="cod" checked><span class="payment-icon" aria-hidden="true">▰</span><span class="payment-copy"><strong>Cash on delivery</strong><small>Pay for your order when it is delivered</small></span><span class="payment-mark" aria-hidden="true">✓</span></label>
+          </div>
+          <p class="demo-note"><strong>Demo checkout:</strong> never enter a real card. Card fields are validated for the flow but are not saved or sent to a payment provider.</p>
+          
+          <div asp-validation-summary="All" id="formError" role="alert"></div>
+        </section>
+        <button class="place-order-button" type="submit">Place order <span aria-hidden="true">→</span></button>
+        <p class="fine-print">Your delivery details are stored in this browser’s local demo order history.</p>
+      </form>
+
+      <aside class="order-summary summary-card" aria-label="Order summary">
+        <div class="summary-heading"><div><p class="eyebrow">YOUR PURCHASE</p><h2>Order summary</h2></div><span class="summary-icon" aria-hidden="true">▤</span></div>
+        <div id="summaryItems" class="summary-items">
+@foreach (var item in items) {
+    <div class="summary-line"><span>@item.Listing.Product.ProductName × @item.Quantity</span><strong>@((Commerce.Price(item.Listing) * item.Quantity).ToString("N2")) JOD</strong></div>
+}
+</div>
+        <div id="emptyCartMessage" class="empty-cart" hidden><p>Your cart is empty.</p><a href="/Market" class="continue-shopping">Browse products</a></div>
+        <div class="summary-line"><span>Items</span><strong id="itemCount">@items.Sum(item => item.Quantity * Commerce.UnitsPerPurchase(item.Listing)) units</strong></div>
+        <div class="summary-line"><span>Subtotal</span><strong id="subtotal">JOD @subtotal.ToString("N2")</strong></div>
+        <div class="summary-line"><span>Marketplace service fee</span><strong id="shipping">JOD 0.00</strong></div>
+        <div class="summary-line"><span>Delivery</span><strong>Confirmed by seller</strong></div>
+        <div class="summary-total"><span>Estimated total</span><strong id="total">JOD @subtotal.ToString("N2")</strong></div>
+        <p class="summary-footnote">Delivery charges, if any, are confirmed by the seller before fulfillment.</p>
+        <div class="summary-assurance"><span aria-hidden="true">✓</span> You’ll receive an in-site order update after checkout.</div>
+      </aside>
+    </div>
+  </main>
+  <partial name="_StockFooter" />
+</body>
+</html>

@@ -1,4 +1,57 @@
-@{ ViewData["Title"] = "Administration"; }
-<h1>Administration</h1><partial name="_Nav" />
-<div class="grid">@foreach (var count in (Dictionary<string, int>)ViewBag.Counts)
-{ <article class="panel stat"><strong>@count.Value</strong>@count.Key</article> }</div>
+@model AdminDashboard
+@{ Layout = null; }
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071735">
+  <title>Admin Overview | Stock Mind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/components/sidebar.css"><link rel="stylesheet" href="/admin/dashboard/dashboard.css"><link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/components/admin-theme.css">
+</head>
+<body class="admin-dashboard-page admin-theme">
+  <partial name="_OriginalAdminSidebar" />
+  <main class="dashboard">
+    <header class="top-header"><div><span class="admin-page-eyebrow">ADMIN WORKSPACE</span><h1>Operations overview</h1><p>Review activity and keep the Stock Mind marketplace trustworthy.</p></div><div class="admin-profile"><span class="admin-avatar">SM</span><span>Administrator</span></div></header>
+    <section class="stats" aria-label="Marketplace operations">
+      <a class="card" href="/Admin/Products"><span class="card-icon is-amber"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span><span><strong id="pendingProductCount">@Model.PendingProducts</strong><small>Products to review</small></span><b><i class="bi bi-arrow-up-right" aria-hidden="true"></i></b></a>
+      <a class="card" href="/Admin/Products"><span class="card-icon is-green"><i class="bi bi-check2-circle" aria-hidden="true"></i></span><span><strong id="approvedProductCount">@Model.ApprovedProducts</strong><small>Approved seller products</small></span><b><i class="bi bi-arrow-up-right" aria-hidden="true"></i></b></a>
+      <a class="card" href="/Admin/Support"><span class="card-icon is-purple"><i class="bi bi-chat-square-heart" aria-hidden="true"></i></span><span><strong id="pendingFeedbackCount">@Model.PendingFeedback</strong><small>Feedback to review</small></span><b><i class="bi bi-arrow-up-right" aria-hidden="true"></i></b></a>
+      <a class="card" href="/Orders"><span class="card-icon is-blue"><i class="bi bi-receipt" aria-hidden="true"></i></span><span><strong id="orderCount">@Model.OrderCount</strong><small>Recorded orders</small></span><b><i class="bi bi-arrow-up-right" aria-hidden="true"></i></b></a>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="overview-panel">
+        <div class="panel-heading"><div><span>SELLER SUBMISSIONS</span><h2>Products awaiting approval</h2></div><a href="/Admin/Products">Review queue <b><i class="bi bi-arrow-right" aria-hidden="true"></i></b></a></div>
+        <div class="table-scroll"><table><thead><tr><th>Product</th><th>Seller</th><th>Category</th><th>Submitted</th></tr></thead><tbody id="pendingProductsTable">
+@foreach (var product in Model.ProductQueue) {
+    <tr><td>@product.ProductName</td><td>@product.Seller.StoreName</td><td>@product.Category.CategoryName</td><td>@((product.SubmittedAt ?? product.CreatedAt).ToString("yyyy-MM-dd"))</td></tr>
+}
+</tbody></table></div>
+        <div class="dashboard-empty" id="productsQueueEmpty" hidden="@(Model.ProductQueue.Count != 0)">All submitted products have been reviewed.</div>
+      </article>
+      <article class="overview-panel feedback-preview-panel">
+        <div class="panel-heading"><div><span>CUSTOMER VOICE</span><h2>Feedback awaiting review</h2></div><a href="/Admin/Support">Open queue <b><i class="bi bi-arrow-right" aria-hidden="true"></i></b></a></div>
+        <div class="feedback-preview-list" id="pendingFeedbackPreview">
+@foreach (var item in Model.FeedbackQueue) { <article><strong>@(item.DisplayName ?? "Customer")</strong><p>@item.Message</p></article> }
+</div>
+        <div class="dashboard-empty" id="feedbackQueueEmpty" hidden="@(Model.FeedbackQueue.Count != 0)">No feedback is waiting for review.</div>
+      </article>
+      <article class="overview-panel orders-preview-panel">
+        <div class="panel-heading"><div><span>MARKETPLACE ACTIVITY</span><h2>Recent orders</h2></div><a href="/Orders">View orders <b><i class="bi bi-arrow-right" aria-hidden="true"></i></b></a></div>
+        <div class="table-scroll"><table><thead><tr><th>Order</th><th>Buyer</th><th>Total</th><th>Status</th></tr></thead><tbody id="recentOrdersTable">
+@foreach (var order in Model.RecentOrders) { <tr><td><a href="/Orders/Details/@order.OrderId">@order.OrderNumber</a></td><td>@order.ShippingName</td><td>@order.GrandTotal.ToString("N2") JOD</td><td>@order.OrderStatus</td></tr> }
+</tbody></table></div>
+        <div class="dashboard-empty" id="ordersEmpty" hidden="@(Model.RecentOrders.Count != 0)">No orders have been recorded in SQL Server.</div>
+      </article>
+    </section>
+    <p class="dashboard-note"><span><i class="bi bi-info-circle" aria-hidden="true"></i></span> Admin review decisions update marketplace visibility and the home page feedback section in this browser.</p>
+  </main>
+</body>
+</html>
+
+

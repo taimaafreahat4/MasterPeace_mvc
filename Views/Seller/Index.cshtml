@@ -1,20 +1,68 @@
-@model IEnumerable<Product>
-@{ ViewData["Title"] = "Seller center"; var seller = (SellerProfile)ViewBag.Seller; }
-<h1>Seller center</h1>
-<p>@seller.StoreName · <span class="pill">@seller.VerificationStatus</span></p><partial name="_Nav" />
-<div class="row between"><h2>Inventory</h2><a class="button" asp-action="Edit">Add product</a></div>
-@if (!Model.Any()) { <p class="panel empty">There are no products in your inventory yet.</p> }
-else
-{
-<div class="table-wrap"><table><thead><tr><th>Product</th><th>Stock</th><th>Approval</th><th>Actions</th></tr></thead><tbody>
-@foreach (var item in Model)
-{
-<tr><td><strong>@item.ProductName</strong><br><small>@item.Category.CategoryName</small></td>
-<td>@(item.Inventory?.AvailableQuantity ?? 0) @if (item.Inventory is { } stock && stock.AvailableQuantity <= stock.ReorderLevel) { <span class="pill">Low stock</span> }</td>
-<td><span class="pill">@item.ApprovalStatus · @item.Status</span> @if (item.RejectionReason is not null) { <p>@item.RejectionReason</p> }</td>
-<td><div class="inline"><a class="button quiet" asp-action="Edit" asp-route-id="@item.ProductId">Edit</a>
-@if (item.Status != "archived") { <form asp-action="Archive" asp-route-id="@item.ProductId" method="post"><button class="danger">Archive</button></form> }
-</div></td></tr>
+@model SellerDashboard
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#061735">
+    <meta name="description" content="Manage your surplus product listings and analyze business decisions with Stock Mind.">
+    <title>Seller Dashboard | Stock Mind</title>
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/seller-shared.css">
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/seller-overview.css">
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/seller-tabs.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+<body data-seller-page="dashboard">
+    <partial name="_StockNavigation" />
+    <div id="seller-tabs-mount"><partial name="_SellerTabs" /></div>
+    <main class="sm-page seller-overview-page">
+        <header class="sm-heading">
+            <div>
+                <span class="sm-eyebrow">SELLER CENTER</span>
+                <h1>Turn surplus into opportunity.</h1>
+                <p>Analyze a buying decision or publish extra stock as one listing with its total quantity. No piece-by-piece stock tracking needed.</p>
+            </div>
+            <div class="seller-overview-actions">
+                <a href="/Seller/StoreProfile" class="sm-btn sm-btn-secondary">Store profile</a>
+                <a href="/Seller/Tools" class="sm-btn sm-btn-secondary">✦ Explore AI tools</a>
+                <a href="/Seller/Edit" class="sm-btn sm-btn-primary">＋ List surplus stock</a>
+            </div>
+        </header>
+        <section class="sm-grid sm-grid-3" aria-label="Surplus listing overview">
+            <article class="sm-card seller-overview-metric"><span>My active listings</span><strong id="overview-listing-count">@Model.Active.Count</strong><small>Products you published</small></article>
+            <article class="sm-card seller-overview-metric"><span>Units offered</span><strong id="overview-unit-count">@Model.Units</strong><small>Combined quantities in your listings</small></article>
+            <article class="sm-card seller-overview-metric"><span>Potential listing value</span><strong id="overview-value">JOD @Model.Value.ToString("N2")</strong><small>Based on your listed prices and quantities</small></article>
+        </section>
+        <section class="sm-card seller-overview-listings">
+            <div class="sm-section-head">
+                <div><h2>Your surplus listings</h2><p>Publish a single product entry with the total lot quantity available.</p></div>
+                <a href="/Seller/Listings" class="sm-btn sm-btn-secondary">Manage listings</a>
+            </div>
+            <div class="sm-table-wrap" id="overview-table-wrap" hidden="@(Model.Listings.Count == 0)">
+                <table>
+                    <thead><tr><th>Product</th><th>Category</th><th>Available</th><th>Price</th><th>Status</th></tr></thead>
+                    <tbody id="overview-listings-body">
+@foreach (var listing in Model.Listings) {
+    <tr><td><a href="/Seller/Edit/@listing.ProductId">@listing.Product.ProductName</a></td><td>@listing.Product.Category.CategoryName</td><td>@listing.ListingQuantity</td><td>@Commerce.Price(listing).ToString("N2") JOD</td><td>@listing.Product.ApprovalStatus · @listing.Status</td></tr>
 }
-</tbody></table></div>
-}
+</tbody>
+                </table>
+            </div>
+            <div class="sm-empty seller-overview-empty" id="overview-empty" hidden="@(Model.Listings.Count != 0)">
+                <span class="seller-overview-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/><path d="m7 5 9 4"/></svg></span>
+                <strong>No surplus listings yet</strong>
+                <p>Turn extra stock into one clear offer for other buyers and businesses.</p>
+                <a href="/Seller/Edit" class="sm-btn sm-btn-primary">＋ Create your first listing</a>
+            </div>
+        </section>
+        <p class="seller-overview-note" id="dashboard-data-status" role="status" aria-live="polite"></p>
+    </main>
+    <partial name="_StockFooter" />
+</body>
+</html>
+
+
+

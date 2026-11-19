@@ -9,3 +9,4 @@ obj/
 *.zip
 .env
 secrets.json
+wwwroot/lib/

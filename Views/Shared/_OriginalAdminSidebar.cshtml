@@ -1,0 +1,37 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var current = controller == "Orders" ? "orders" : controller == "Profile" ? "profile"
+        : action == "Index" ? "dashboard" : action == "Support" ? "feedback" : action?.ToLowerInvariant();
+}
+<aside class="admin-sidebar" aria-label="Administrator navigation">
+  <a href="/" class="admin-logo">
+    <img src="/components/logo.png" alt="">
+    <span class="admin-brand-copy"><span class="admin-brand-name">Stock <b>Mind</b></span><small>ADMIN CONSOLE</small></span>
+  </a>
+
+  <div class="sidebar-section-label">WORKSPACE</div>
+  <nav class="sidebar-menu">
+    <a href="/Admin" data-admin-link="dashboard" class="@(current == "dashboard" ? "active" : null)"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span>Overview</span></a>
+    <a href="/Admin/Users" data-admin-link="users" class="@(current == "users" ? "active" : null)"><i class="bi bi-people" aria-hidden="true"></i><span>Users</span></a>
+    <a href="/Admin/Sellers" data-admin-link="sellers" class="@(current == "sellers" ? "active" : null)"><i class="bi bi-shop" aria-hidden="true"></i><span>Sellers</span></a>
+    <a href="/Admin/Products" data-admin-link="products" class="@(current == "products" ? "active" : null)"><i class="bi bi-box-seam" aria-hidden="true"></i><span>Product approvals</span><em class="sidebar-count" id="admin-pending-products" hidden>0</em></a>
+    <a href="/Admin/Support" data-admin-link="feedback" class="@(current == "feedback" ? "active" : null)"><i class="bi bi-chat-left-text" aria-hidden="true"></i><span>Feedback</span><em class="sidebar-count" id="admin-pending-feedback" hidden>0</em></a>
+    <a href="/Orders" data-admin-link="orders" class="@(current == "orders" ? "active" : null)"><i class="bi bi-bag" aria-hidden="true"></i><span>Orders</span></a>
+  </nav>
+
+  <div class="sidebar-section-label sidebar-section-settings">PREFERENCES</div>
+  <nav class="sidebar-menu sidebar-preferences">
+    <a href="/Admin/Settings" data-admin-link="settings" class="@(current == "settings" ? "active" : null)"><i class="bi bi-sliders" aria-hidden="true"></i><span>Settings</span></a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-admin-card"><span class="sidebar-admin-avatar">SM</span><span><strong>Stock Mind</strong><small>Administrator</small></span></div>
+    <a href="/Profile" data-admin-link="profile" class="@(current == "profile" ? "active" : null)"><i class="bi bi-person-circle" aria-hidden="true"></i><span>Profile</span></a>
+    <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit" class="workspace-logout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Log out</span></button></form>
+  </div>
+</aside>
+
+
+
+

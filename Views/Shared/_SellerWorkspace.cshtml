@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@ViewData["Title"] · Stock Mind Seller Center</title>
+<link rel="stylesheet" href="~/seller/stockmind_seller_center/seller-shared.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/stock-brand.css" asp-append-version="true">
+<link rel="stylesheet" href="~/seller/stockmind_seller_center/seller-tabs.css" asp-append-version="true">
+<link rel="stylesheet" href="~/components/footer.css" asp-append-version="true">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+<partial name="_StockNavigation" />
+<div id="seller-tabs-mount"><partial name="_SellerTabs" /></div>
+<main class="sm-page seller-mvc-content">
+@if (OperationNotice.Text(Context.Request.Query["notice"].ToString()) is string notice) { <p class="notice" role="status">@notice</p> }
+@RenderBody()
+</main>
+<partial name="_StockFooter" />
+</body>
+</html>

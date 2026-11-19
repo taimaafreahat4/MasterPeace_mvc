@@ -1,0 +1,20 @@
+@model IEnumerable<Product>
+@{ ViewData["Title"] = "Seller center"; var seller = (SellerProfile)ViewBag.Seller; }
+<h1>Seller center</h1>
+<p>@seller.StoreName · <span class="pill">@seller.VerificationStatus</span></p><partial name="_Nav" />
+<div class="row between"><h2>Inventory</h2><a class="button" asp-action="Edit">Add product</a></div>
+@if (!Model.Any()) { <p class="panel empty">There are no products in your inventory yet.</p> }
+else
+{
+<div class="table-wrap"><table><thead><tr><th>Product</th><th>Stock</th><th>Approval</th><th>Actions</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+<tr><td><strong>@item.ProductName</strong><br><small>@item.Category.CategoryName</small></td>
+<td>@(item.Inventory?.AvailableQuantity ?? 0) @if (item.Inventory is { } stock && stock.AvailableQuantity <= stock.ReorderLevel) { <span class="pill">Low stock</span> }</td>
+<td><span class="pill">@item.ApprovalStatus · @item.Status</span> @if (item.RejectionReason is not null) { <p>@item.RejectionReason</p> }</td>
+<td><div class="inline"><a class="button quiet" asp-action="Edit" asp-route-id="@item.ProductId">Edit</a>
+@if (item.Status != "archived") { <form asp-action="Archive" asp-route-id="@item.ProductId" method="post"><button class="danger">Archive</button></form> }
+</div></td></tr>
+}
+</tbody></table></div>
+}

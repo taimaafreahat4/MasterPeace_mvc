@@ -46,3 +46,5 @@ public sealed class PurchaseController(StockMindDb db) : StockController
         return View("Index", form);
     }
 }
+
+

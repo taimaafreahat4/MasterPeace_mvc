@@ -1,0 +1,25 @@
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var theme = action switch { "Users" => "users", "Sellers" => "sellers", "Products" or "Support" => "products", _ => null };
+}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@ViewData["Title"] · Stock Mind Admin</title>
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/admin/components/sidebar.css" asp-append-version="true">
+@if (theme is not null) { <link rel="stylesheet" href="/admin/@theme/@(theme).css" asp-append-version="true"> }
+<link rel="stylesheet" href="~/admin/components/admin-theme.css" asp-append-version="true">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="admin-theme admin-mvc-workspace @(ViewContext.RouteData.Values["action"]?.ToString() is "Products" or "Support" ? "moderation-page" : "")">
+<partial name="_OriginalAdminSidebar" />
+<main class="content admin-mvc-content">
+@if (OperationNotice.Text(Context.Request.Query["notice"].ToString()) is string notice) { <p class="notice" role="status">@notice</p> }
+@RenderBody()
+</main>
+</body>
+</html>
+
+

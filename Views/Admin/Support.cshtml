@@ -1,6 +1,11 @@
 @model IEnumerable<SupportTicket>
 @{ ViewData["Title"] = "Support and moderation"; }
-<h1>Support and moderation</h1><partial name="_Nav" />
+<header class="page-header"><div><span class="admin-page-eyebrow">TRUST &amp; QUALITY CONTROL</span><h1>Moderation center</h1><p>Manage feedback and support requests.</p></div><div class="admin-profile"><span class="admin-avatar">SM</span><span>Administrator</span></div></header>
+<partial name="_ModerationTotals" />
+<section class="moderation-workspace">
+<div class="moderation-toolbar"><div><span class="toolbar-eyebrow">REVIEW QUEUE</span><h2>Feedback</h2></div>
+<nav class="moderation-tabs"><a class="moderation-tab" asp-action="Products">Products</a><a class="moderation-tab is-active" asp-action="Support">Feedback</a></nav></div>
+<div class="moderation-panel is-active">
 <h2>Support tickets</h2>
 @foreach (var item in Model)
 {
@@ -21,3 +26,6 @@
 <article class="panel"><h3>@item.OrderItem.ProductNameSnapshot · @item.Rating / 5 <span class="pill">@item.ApprovalStatus</span></h3><p>@item.Comment</p>
 <form class="inline" asp-action="ModerateFeedback" asp-route-id="@item.ReviewId" method="post"><input type="hidden" name="review" value="true"><button name="approve" value="true">Approve</button><button class="danger" name="approve" value="false">Reject</button></form></article>
 }
+</div>
+</section>
+

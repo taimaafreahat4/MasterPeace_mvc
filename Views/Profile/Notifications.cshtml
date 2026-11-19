@@ -1,5 +1,5 @@
 @model IEnumerable<Notification>
-@{ ViewData["Title"] = "Notifications"; }
+@{ if (User.IsInRole("admin")) Layout = "_AdminWorkspace"; else if (User.IsInRole("seller")) Layout = "_SellerWorkspace"; ViewData["Title"] = "Notifications"; }
 <div class="row between"><h1>Notifications</h1>
 @if (Model.Any(n => !n.IsRead)) { <form asp-action="Read" method="post"><button class="quiet">Mark all as read</button></form> }</div>
 @if (!Model.Any()) { <p class="panel empty">No notifications yet.</p> }

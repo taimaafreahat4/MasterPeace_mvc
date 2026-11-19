@@ -1,6 +1,79 @@
 @model IEnumerable<Listing>
-@{ ViewData["Title"] = "Favorites"; }<h1>Favorites</h1>
-<partial name="_Cards" model="Model" />
-@if (Model.Any()) { <section class="section"><h2>Manage favorites</h2>
-@foreach (var listing in Model) { <form class="inline panel" asp-action="Favorite" asp-route-id="@listing.ListingId" method="post"><span>@listing.Product.ProductName</span><button class="quiet" name="remove" value="true">Remove</button></form> }
-</section> }
+@{ Layout = null; }
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Favorites | Stock Mind</title>
+
+<link rel="stylesheet" href="/favorite/favorite.css">
+<link rel="stylesheet" href="/css/stock-brand.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/components/footer.css">
+
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+
+
+<body>
+
+<partial name="_StockNavigation" />
+
+<!-- NAVBAR موجود عندك -->
+
+
+
+<main class="favorite-page">
+
+
+<section class="favorite-header">
+
+<h1>
+My Favorites ❤️
+</h1>
+
+<p>
+Products you saved for later.
+</p>
+
+</section>
+
+
+
+
+<section id="favoriteContainer" class="favorite-container">
+@if (!Model.Any()) { <p>No favorites yet.</p> }
+@foreach (var listing in Model)
+{
+    <article class="favorite-card">
+        <form asp-action="Favorite" asp-route-id="@listing.ListingId" method="post">
+            <button class="remove-btn" name="remove" value="true" aria-label="Remove from favorites">×</button>
+        </form>
+        <a asp-action="Details" asp-route-id="@listing.ListingId"><partial name="_Photo" model="listing.Product" /></a>
+        <div>
+            <h2><a asp-action="Details" asp-route-id="@listing.ListingId">@listing.Product.ProductName</a></h2>
+            <strong class="price">@Commerce.Price(listing).ToString("N2") JOD</strong>
+            @if (Commerce.InStock(listing, Commerce.Minimum(listing)))
+            {
+                <form asp-controller="Cart" asp-action="Set" asp-route-id="@listing.ListingId" method="post">
+                    <input type="hidden" name="quantity" value="@Commerce.Minimum(listing)">
+                    <button class="cart-btn" name="add" value="true">Add to cart</button>
+                </form>
+            }
+        </div>
+    </article>
+}
+</section>
+
+
+
+</main>
+
+
+<partial name="_StockFooter" />
+</body>
+</html>
+

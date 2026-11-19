@@ -11,3 +11,4 @@
 @media(max-width:920px){.stock-nav-inner{gap:12px;flex-wrap:wrap;padding-block:10px}.stock-nav-links{order:3;flex-basis:100%;overflow:auto;gap:20px;padding-bottom:2px}.stock-nav-actions{gap:10px}}
 @media(max-width:480px){.stock-logo{font-size:16px;gap:6px}.stock-logo img{width:27px;height:27px}.stock-nav .stock-auth{padding:6px 8px}.stock-icon{font-size:16px}}
 body{--primary:#7137e9}.site-footer{margin-top:auto}.stock-category-link:hover{text-decoration:underline}.stock-nav{position:sticky;top:0;align-self:stretch}
+

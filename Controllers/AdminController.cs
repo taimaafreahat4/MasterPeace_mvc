@@ -10,18 +10,42 @@ public sealed class AdminController(StockMindDb db) : StockController
 {
     public async Task<IActionResult> Index()
     {
-        ViewBag.Counts = new Dictionary<string, int>
-        {
-            ["Users"] = await db.Users.CountAsync(),
-            ["Sellers"] = await db.SellerProfiles.CountAsync(),
-            ["Products awaiting review"] = await db.Products.CountAsync(p => p.ApprovalStatus == "pending" && p.Status != "archived"),
-            ["Orders"] = await db.Orders.CountAsync()
-        };
-        return View();
+        var pending = db.Products.AsNoTracking().Where(p => p.ApprovalStatus == "pending" && p.Status != "archived");
+        var feedback = db.SiteFeedbacks.AsNoTracking().Where(f => f.ApprovalStatus == "pending");
+        return View(new Models.AdminDashboard(
+            await pending.CountAsync(),
+            await db.Products.CountAsync(p => p.ApprovalStatus == "approved" && p.Status != "archived"),
+            await feedback.CountAsync(),
+            await db.Orders.CountAsync(),
+            await pending.Include(p => p.Category).Include(p => p.Seller).OrderByDescending(p => p.SubmittedAt).Take(5).ToListAsync(),
+            await feedback.OrderByDescending(f => f.SubmittedAt).Take(4).ToListAsync(),
+            await db.Orders.AsNoTracking().OrderByDescending(o => o.CreatedAt).Take(5).ToListAsync()));
     }
 
-    public async Task<IActionResult> Products() => View(await db.Products.Include(p => p.Seller).Include(p => p.Category)
-        .Where(p => p.Status != "archived").OrderBy(p => p.ApprovalStatus != "pending").ThenByDescending(p => p.CreatedAt).Take(200).ToListAsync());
+    public async Task<IActionResult> Sellers() => View(await db.SellerProfiles.Include(s => s.User)
+        .OrderByDescending(s => s.CreatedAt).Take(200).ToListAsync());
+
+    public async Task<IActionResult> Products(string? q, string approval = "all")
+    {
+        await LoadModerationTotals();
+        ViewBag.Query = q;
+        ViewBag.Approval = approval;
+        var products = db.Products.Include(p => p.Seller).Include(p => p.Category).Include(p => p.Listings)
+            .Where(p => p.Status != "archived");
+        if (!string.IsNullOrWhiteSpace(q))
+            products = products.Where(p => p.ProductName.Contains(q) || p.Seller.StoreName.Contains(q) || p.Category.CategoryName.Contains(q));
+        if (approval is "pending" or "approved" or "rejected")
+            products = products.Where(p => p.ApprovalStatus == approval);
+        return View(await products.OrderBy(p => p.ApprovalStatus != "pending").ThenByDescending(p => p.CreatedAt).Take(200).ToListAsync());
+    }
+
+    private async Task LoadModerationTotals()
+    {
+        ViewBag.PendingProducts = await db.Products.CountAsync(p => p.Status != "archived" && p.ApprovalStatus == "pending");
+        ViewBag.ApprovedProducts = await db.Products.CountAsync(p => p.Status != "archived" && p.ApprovalStatus == "approved");
+        ViewBag.PendingFeedback = await db.SiteFeedbacks.CountAsync(f => f.ApprovalStatus == "pending");
+        ViewBag.PublicFeedback = await db.SiteFeedbacks.CountAsync(f => f.ApprovalStatus == "approved");
+    }
 
     [HttpPost]
     public async Task<IActionResult> Moderate(long id, bool approve, string? reason)
@@ -68,7 +92,7 @@ public sealed class AdminController(StockMindDb db) : StockController
     }
 
     [HttpPost]
-    public async Task<IActionResult> Verify(long id, bool approve)
+    public async Task<IActionResult> Verify(long id, bool approve, bool returnToSellers = false)
     {
         await using var transaction = await Commerce.Lock(db);
         var seller = await db.SellerProfiles.FindAsync(id);
@@ -78,11 +102,12 @@ public sealed class AdminController(StockMindDb db) : StockController
             Body = $"Your store verification is {seller.VerificationStatus}.", NotificationType = "seller" });
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return RedirectToAction(nameof(Users));
+        return RedirectToAction(returnToSellers ? nameof(Sellers) : nameof(Users));
     }
 
     public async Task<IActionResult> Support()
     {
+        await LoadModerationTotals();
         ViewBag.Feedback = await db.SiteFeedbacks.OrderBy(f => f.ApprovalStatus != "pending").ThenByDescending(f => f.SubmittedAt).Take(100).ToListAsync();
         ViewBag.Reviews = await db.Reviews.Include(r => r.OrderItem).OrderBy(r => r.ApprovalStatus != "pending")
             .ThenByDescending(r => r.CreatedAt).Take(100).ToListAsync();
@@ -215,3 +240,8 @@ public sealed class AdminController(StockMindDb db) : StockController
         return RedirectToAction(nameof(Settings));
     }
 }
+
+
+
+
+

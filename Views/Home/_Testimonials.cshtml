@@ -28,7 +28,7 @@
                             "demo-wholesale" => ("Wholesale Merchant", "Better decisions"),
                             _ => ("Stock Mind member", "Merchant feedback")
                         };
-                        <article class="t-card">
+                        <article class="t-card" data-feedback-id="@item.FeedbackId">
                             <div class="t-quote" aria-hidden="true">“</div>
                             <div class="t-user">
                                 <div class="t-avatar t-avatar-initials" aria-hidden="true">@initials</div>
@@ -53,3 +53,5 @@
         }
     </div>
 </section>
+
+

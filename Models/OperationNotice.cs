@@ -9,7 +9,6 @@ public static class OperationNotice
         "plan-requested" => "Subscription requested. Contact support to arrange payment.",
         "analysis-saved" => "Purchase analysis saved.",
         "profile-saved" => "Profile saved.",
-        "feedback-submitted" => "Thanks for sharing your feedback.",
         "ticket-submitted" => "Your support ticket was submitted.",
         "quantity-unavailable" => "That quantity is unavailable. Check the minimum and available stock.",
         "stock-changed" => "Stock changed. Update your cart.",
@@ -18,3 +17,4 @@ public static class OperationNotice
         _ => null
     };
 }
+

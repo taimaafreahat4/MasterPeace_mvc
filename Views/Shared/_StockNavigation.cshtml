@@ -9,7 +9,7 @@
             <a asp-controller="Market" asp-action="Index">Categories</a>
             <a asp-controller="Home" asp-action="Index" asp-fragment="about">About</a>
             <a asp-controller="Home" asp-action="Index" asp-fragment="contact">Contact us</a>
-            @if (User.IsInRole("buyer")) { <a asp-controller="Orders" asp-action="Index">Orders</a> }
+            @if (User.IsInRole("buyer")) { <a asp-controller="Buyer" asp-action="Index">Dashboard</a> }
             @if (User.IsInRole("seller")) { <a asp-controller="Seller" asp-action="Index">Seller center</a> }
             @if (User.IsInRole("admin")) { <a asp-controller="Admin" asp-action="Index">Administration</a> }
         </div>
@@ -22,7 +22,7 @@
             <a class="stock-icon stock-heart" asp-controller="Market" asp-action="Favorites" aria-label="Favorites"><i class="fa-solid fa-heart"></i></a>
             @if (User.Identity?.IsAuthenticated == true)
             {
-                <a class="stock-auth" asp-controller="Profile" asp-action="Index">Account</a>
+                <a class="stock-auth" asp-controller="Profile" asp-action="Edit">Account</a>
                 <form asp-controller="Account" asp-action="Logout" method="post"><button class="stock-auth">Sign out</button></form>
             }
             else
@@ -33,3 +33,4 @@
         </div>
     </nav>
 </header>
+

@@ -9,3 +9,4 @@ public abstract class StockController : Controller
     protected IActionResult Notice(string code, string controller, string action = "Index")
         => RedirectToAction(action, controller, new { notice = code });
 }
+

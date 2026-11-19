@@ -37,7 +37,7 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
 
         await SignIn(member);
         return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl) : RedirectToAction("Index",
-            member.Role.RoleName switch { "admin" => "Admin", "seller" => "Seller", _ => "Market" });
+            member.Role.RoleName switch { "admin" => "Admin", "seller" => "Seller", _ => "Buyer" });
     }
 
     public IActionResult Register(bool seller = false) => View(new RegisterForm { Seller = seller });
@@ -96,7 +96,7 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
             return View(form);
         }
         await SignIn(member);
-        return RedirectToAction("Index", form.Seller ? "Seller" : "Market");
+        return RedirectToAction("Index", form.Seller ? "Seller" : "Buyer");
     }
 
     [Authorize]
@@ -110,7 +110,7 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
         return File(image.Photo, image.PhotoType);
     }
 
-    private static string? ImageType(ReadOnlySpan<byte> bytes)
+    internal static string? ImageType(ReadOnlySpan<byte> bytes)
     {
         if (bytes.StartsWith(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 })) return "image/png";
         if (bytes.Length >= 8 && bytes.StartsWith(new byte[] { 255, 216, 255 })) return "image/jpeg";
@@ -170,3 +170,8 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
         Console.WriteLine("Account created.");
     }
 }
+
+
+
+
+

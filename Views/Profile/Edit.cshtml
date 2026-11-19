@@ -1,0 +1,175 @@
+@model PersonalDetailsForm
+@{ Layout = null; }
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Profile | Stock Mind</title>
+    <link rel="stylesheet" href="/profile/profile.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+<link rel="stylesheet" href="/components/footer.css">
+
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+
+<body>
+    <partial name="_StockNavigation" />
+
+    <main class="profile-page">
+        <section class="profile-card"><a href="/Profile">Account settings</a><form id="profileForm" asp-action="Edit" method="post" enctype="multipart/form-data">
+
+            <!-- PROFILE PHOTO -->
+            <div class="photo-section">
+                <div class="photo-wrapper">
+                    <img
+                        id="editAvatar"
+                        src="@(ViewBag.HasPhoto == true ? "/Account/Photo" : "/components/logo.png")"
+                        alt="Profile picture"
+                    >
+                    <span class="photo-edit-icon">✎</span>
+                </div>
+
+                <div class="photo-info">
+                    <h2>Your Profile Photo</h2>
+                    <p>Choose a JPG or PNG image up to 1.5 MB.</p>
+
+                    <label for="newImage" class="upload-button">
+                        <span>↑</span> Upload New Photo
+                    </label>
+
+                    <input
+                        type="file"
+                        id="newImage" asp-for="Photo"
+                        accept="image/jpeg,image/png"
+                        hidden
+                    >
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- BASIC INFORMATION -->
+            
+                <div class="form-heading">
+                    <h2>Basic Information</h2>
+                    <p>Fields marked with * are required.</p>
+                </div>
+
+                <div class="form-grid">
+
+                    <label class="form-field">
+                        <span>Full Name <b>*</b></span>
+                        <input
+                            id="editName"
+                            asp-for="FullName"
+                            type="text"
+                            maxlength="80"
+                            autocomplete="name"
+                            placeholder="Enter your full name"
+                            required
+                        >
+                    </label>
+
+                    <label class="form-field">
+                        <span>Username <b>*</b></span>
+                        <input
+                            id="editUsername"
+                            asp-for="Username"
+                            type="text"
+                            maxlength="40"
+                            autocomplete="username"
+                            placeholder="Enter your username"
+                            required
+                        >
+                    </label>
+
+                    <label class="form-field">
+                        <span>Email Address</span>
+                        <input
+                            id="editEmail"
+                            value="@ViewBag.Email"
+                            type="email"
+                            disabled
+                        >
+                        <small>Email editing is disabled for now.</small>
+                    </label>
+
+                    <label class="form-field">
+                        <span>Phone Number</span>
+                        <input
+                            id="editPhone"
+                            asp-for="Phone"
+                            type="tel"
+                            maxlength="25"
+                            autocomplete="tel"
+                            placeholder="Enter your phone number"
+                        >
+                    </label>
+
+                    <label class="form-field">
+                        <span>Country</span>
+                        <input
+                            id="editCountry"
+                            asp-for="Country"
+                            type="text"
+                            maxlength="60"
+                            autocomplete="country-name"
+                            placeholder="Enter your country"
+                        >
+                    </label>
+
+                    <label class="form-field">
+                        <span>City</span>
+                        <input
+                            id="editCity"
+                            asp-for="City"
+                            type="text"
+                            maxlength="60"
+                            autocomplete="address-level2"
+                            placeholder="Enter your city"
+                        >
+                    </label>
+
+                    <label class="form-field full-width">
+                        <span>Address</span>
+                        <input
+                            id="editAddress"
+                            asp-for="StreetAddress"
+                            type="text"
+                            maxlength="200"
+                            autocomplete="street-address"
+                            placeholder="Enter your address"
+                        >
+                    </label>
+
+                </div>
+
+                <div class="section-divider bottom-divider"></div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="form-actions">
+                    <a href="/" class="cancel-button">Cancel</a>
+
+                    <button type="submit" class="save-button">
+                        <span class="save-icon">✓</span>
+                        Save Changes
+                    </button>
+                </div>
+
+                <div asp-validation-summary="All" class="form-message" role="alert"></div>
+@if (OperationNotice.Text(Context.Request.Query["notice"].ToString()) is string notice) { <p class="form-message" role="status">@notice</p> }
+            </form>
+
+        </section>
+    </main>
+
+<partial name="_StockFooter" />
+
+
+<!-- Shared navbar logic -->
+</body>
+</html>
+

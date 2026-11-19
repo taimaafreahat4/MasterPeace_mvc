@@ -21,7 +21,10 @@
     const DRAG = 240;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    let pos = 0, target = 0, spread = 0, spreadTarget = 0;
+    const submitted = new URLSearchParams(location.search).get("feedback");
+    const selected = submitted ? cards.findIndex(card => card.dataset.feedbackId === submitted) : -1;
+    const initial = Math.max(0, selected);
+    let pos = initial, target = initial, spread = 0, spreadTarget = 0;
     let visible = false, hovering = false, dragging = false;
     let startX = 0, startPos = 0, moved = 0, activeIdx = -1, timer = null;
     const wrap = d => ((d + count / 2) % count + count) % count - count / 2;
@@ -118,7 +121,15 @@
         requestAnimationFrame(frame);
     }
 
+    if (selected >= 0 || location.hash === "#testimonials") {
+        const revealFeedback = () => stage.closest("section").scrollIntoView({ behavior: "instant", block: "start" });
+        if (document.readyState === "complete") revealFeedback();
+        else window.addEventListener("load", revealFeedback, { once: true });
+    }
+
     render(0);
     restart();
     requestAnimationFrame(frame);
 })();
+
+

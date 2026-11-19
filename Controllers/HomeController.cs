@@ -16,13 +16,15 @@ public sealed class HomeController(StockMindDb db) : StockController
         var categories = (await db.Categories.Where(c => c.IsActive).ToListAsync())
             .ToDictionary(c => c.CategoryName, c => new CategorySummary(c.CategoryId, c.CategoryName,
                 counts.GetValueOrDefault(c.CategoryId)), StringComparer.OrdinalIgnoreCase);
+        // Keep Yousef, Sarah and Mohammed on one side of the loop, and Lina and Omar
+        // on the other, so new feedback never replaces one of the five opening cards.
         var feedback = await db.VwHomeFeedbacks.OrderBy(f =>
                 f.Category == "demo-electronics" ? 0 :
                 f.Category == "demo-retail" ? 1 :
                 f.Category == "demo-online" ? 2 :
-                f.Category == "demo-business" ? 3 :
-                f.Category == "demo-wholesale" ? 4 : 5)
-            .ThenByDescending(f => f.SubmittedAt).ThenByDescending(f => f.FeedbackId).Take(12).ToListAsync();
+                f.Category == "demo-business" ? 4 :
+                f.Category == "demo-wholesale" ? 5 : 3)
+            .ThenByDescending(f => f.SubmittedAt).ThenByDescending(f => f.FeedbackId).ToListAsync();
         return View(new LandingViewModel(categories, feedback));
     }
 
@@ -37,14 +39,15 @@ public sealed class HomeController(StockMindDb db) : StockController
     public async Task<IActionResult> Feedback(FeedbackForm form)
     {
         if (!ModelState.IsValid) return View(form);
-        db.SiteFeedbacks.Add(new()
+        var feedback = new StockMind.Models.Database.SiteFeedback
         {
             UserId = User.Identity?.IsAuthenticated == true ? UserId : null,
             SourceType = "site", Message = form.Message, Rating = form.Rating,
-            DisplayName = form.Name, ContactEmail = form.Email, ApprovalStatus = "pending"
-        });
+            DisplayName = form.Name, ContactEmail = form.Email, ApprovalStatus = "approved"
+        };
+        db.SiteFeedbacks.Add(feedback);
         await db.SaveChangesAsync();
-        return Notice("feedback-submitted", "Home");
+        return RedirectToAction(nameof(Index), "Home", new { feedback = feedback.FeedbackId }, "testimonials");
     }
 
     public IActionResult Help() => View();
@@ -66,3 +69,8 @@ public sealed class HomeController(StockMindDb db) : StockController
         return Notice("ticket-submitted", "Home");
     }
 }
+
+
+
+
+

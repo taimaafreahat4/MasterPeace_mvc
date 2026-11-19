@@ -1,0 +1,16 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var dashboard = controller == "Seller" && action == "Index";
+    var tools = controller == "Purchase" || action is "Tools" or "Insights" or "Plans";
+}
+<nav class="sm-seller-tabs" aria-label="Seller navigation">
+    <div class="sm-seller-tabs__inner">
+        <a class="sm-seller-tab @(dashboard ? "is-active" : "")" href="/Seller"><span class="sm-seller-tab__icon" aria-hidden="true">⌂</span><span>Dashboard</span></a>
+        <a class="sm-seller-tab @(tools ? "is-active" : "")" href="/Seller/Tools"><span class="sm-seller-tab__icon" aria-hidden="true">✧</span><span>AI Tools</span></a>
+        <a class="sm-seller-tab @(!dashboard && !tools ? "is-active" : "")" href="/Seller/Listings"><span class="sm-seller-tab__icon" aria-hidden="true">◇</span><span>Surplus listings</span></a>
+    </div>
+    <button class="sm-seller-tabs__toggle" type="button" aria-expanded="true"><span class="toggle-label">Seller navigation</span><span class="toggle-arrow">⌃</span></button>
+</nav>
+<script defer src="/seller/stockmind_seller_center/mvc-tabs.js"></script>
+

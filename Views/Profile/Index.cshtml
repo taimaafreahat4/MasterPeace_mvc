@@ -1,5 +1,5 @@
 @model ProfileForm
-@{ ViewData["Title"] = "Account"; }
+@{ if (User.IsInRole("admin")) Layout = "_AdminWorkspace"; else if (User.IsInRole("seller")) Layout = "_SellerWorkspace"; ViewData["Title"] = "Account"; }
 <h1>Your account</h1>
 @if (ViewBag.HasPhoto == true) { <img src="/Account/Photo" alt="Your profile photo" width="64" height="64" style="object-fit:cover;border-radius:50%"> }
 <form class="panel form" asp-action="Index" method="post">
@@ -14,3 +14,4 @@
 <label><input asp-for="MarketingNotifications"> Marketing</label>
 <button>Save changes</button>
 </form>
+

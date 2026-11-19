@@ -1,14 +1,44 @@
 @model IEnumerable<Product>
-@{ ViewData["Title"] = "Product moderation"; }
-<h1>Product moderation</h1><partial name="_Nav" />
-<div class="table-wrap"><table><thead><tr><th>Product</th><th>Seller</th><th>Status</th><th>Moderation</th></tr></thead><tbody>
-@foreach (var item in Model)
-{
-<tr><td><strong>@item.ProductName</strong><br><small>@item.Category.CategoryName</small></td>
-<td>@item.Seller.StoreName<br><small>@item.Seller.VerificationStatus</small></td>
-<td><span class="pill">@item.ApprovalStatus</span>@if (item.RejectionReason is not null) { <p>@item.RejectionReason</p> }</td>
-<td><form class="inline" asp-action="Moderate" asp-route-id="@item.ProductId" method="post">
-<input name="reason" aria-label="Rejection reason" placeholder="Reason for rejection" maxlength="1000">
-<button name="approve" value="true">Approve</button><button class="danger" name="approve" value="false">Reject</button></form></td></tr>
-}
-</tbody></table></div>
+@{ ViewData["Title"] = "Moderation center"; Layout = "_AdminWorkspace"; }
+<header class="page-header"><div><span class="admin-page-eyebrow">TRUST &amp; QUALITY CONTROL</span>
+<h1>Moderation center</h1><p>Review seller products and customer feedback.</p></div>
+<div class="admin-profile"><span class="admin-avatar">SM</span><span>Administrator</span></div></header>
+<partial name="_ModerationTotals" />
+<section class="moderation-workspace">
+    <div class="moderation-toolbar">
+        <div><span class="toolbar-eyebrow">REVIEW QUEUE</span><h2>Submitted for approval</h2><p>Pending products stay private until approved.</p></div>
+        <nav class="moderation-tabs"><a class="moderation-tab is-active" asp-action="Products">Products</a><a class="moderation-tab" asp-action="Support">Feedback</a></nav>
+    </div>
+    <section class="moderation-panel is-active">
+        <form class="queue-controls" method="get" asp-action="Products">
+            <label class="queue-search"><span class="sr-only">Search products</span><i class="bi bi-search"></i><input name="q" type="search" value="@ViewBag.Query" placeholder="Search product, seller, category…"></label>
+            <label class="queue-filter"><span class="sr-only">Filter product approval status</span>
+                <select name="approval">
+                    @foreach (var option in new[] { ("pending", "Waiting for review"), ("all", "All products"), ("approved", "Approved"), ("rejected", "Rejected") })
+                    { <option value="@option.Item1" selected="@(ViewBag.Approval == option.Item1)">@option.Item2</option> }
+                </select>
+            </label><button>Apply</button>
+        </form>
+        <div class="table-wrap"><table class="moderation-table">
+            <thead><tr><th>Product</th><th>Seller / Store</th><th>Category</th><th>Offer</th><th>Submitted</th><th>Review status</th><th>Decision</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                var listing = item.Listings.MaxBy(l => l.ListingId);
+                <tr>
+                    <td><strong>@item.ProductName</strong></td><td>@item.Seller.StoreName</td><td>@item.Category.CategoryName</td>
+                    <td>@(listing is null ? "—" : $"{Commerce.Price(listing):N2} JOD")</td>
+                    <td>@((item.SubmittedAt ?? item.CreatedAt).ToString("yyyy-MM-dd"))</td><td><span class="pill">@item.ApprovalStatus</span>
+                    @if (item.RejectionReason is not null) { <p>@item.RejectionReason</p> }</td>
+                    <td><form class="inline" asp-action="Moderate" asp-route-id="@item.ProductId" method="post">
+                        <input name="reason" aria-label="Rejection reason" placeholder="Reason for rejection" maxlength="1000">
+                        <button name="approve" value="true">Approve</button><button class="danger" name="approve" value="false">Reject</button>
+                    </form></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        @if (!Model.Any()) { <div class="queue-empty"><span>✓</span><strong>Nothing to review here</strong><p>New seller submissions will appear in this queue.</p></div> }
+        </div>
+    </section>
+</section>

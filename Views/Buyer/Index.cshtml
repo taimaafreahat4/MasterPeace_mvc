@@ -1,0 +1,196 @@
+@model BuyerDashboard
+@{
+    Layout = null;
+    var now = DateTime.UtcNow;
+    var firstMonth = new DateTime(now.Year, now.Month, 1).AddMonths(-5);
+    var monthly = Enumerable.Range(0, 6).Select(index =>
+    {
+        var start = firstMonth.AddMonths(index);
+        var end = start.AddMonths(1);
+        return new { label = start.ToString("MMM"), total = Model.Orders.Where(order => order.CreatedAt >= start && order.CreatedAt < end && order.OrderStatus != "cancelled").Sum(order => order.GrandTotal) };
+    });
+    var monthlyJson = System.Text.Json.JsonSerializer.Serialize(monthly);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Dashboard | Stock Mind</title>
+
+    <link rel="stylesheet" href="/buyer-dashboard/dashboard.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+
+<body>
+    <partial name="_StockNavigation" />
+
+    <main class="dashboard-page">
+        <section class="welcome-banner">
+            <div>
+                <span class="eyebrow">BUYER SPACE</span>
+                <h1>Welcome back, <span id="buyerName">@Model.Name</span>!</h1>
+                <p>Track your purchases, review your orders, and see your shopping activity.</p>
+            </div>
+
+            <a href="/Market" class="shop-button">
+                <span>＋</span> Continue Shopping
+            </a>
+        </section>
+
+        <!-- SUMMARY CARDS -->
+        <section class="stats-grid" aria-label="Shopping statistics">
+            <article class="stat-card">
+                <div class="stat-icon purple">▤</div>
+                <p>Total Orders</p>
+                <h2 id="totalOrders">@Model.Orders.Count</h2>
+                <span>All recorded orders</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon blue">$</div>
+                <p>Total Spent</p>
+                <h2 id="totalSpent">@Model.TotalSpent.ToString("N2") JOD</h2>
+                <span>Recorded purchase amount</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon orange">◷</div>
+                <p>Average Order</p>
+                <h2 id="averageOrder">@(Model.Orders.Count == 0 ? "0.00" : (Model.TotalSpent / Model.Orders.Count).ToString("N2")) JOD</h2>
+                <span>Average per order</span>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon green">✓</div>
+                <p>Completed Orders</p>
+                <h2 id="completedOrders">@Model.Completed</h2>
+                <span>Successfully completed</span>
+            </article>
+        </section>
+
+        <!-- CHART + ORDER STATUS -->
+        <section class="analytics-grid">
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Spending Overview</h2>
+                        <p>Your monthly spending over the last six months</p>
+                    </div>
+                    <span class="period-badge">6 Months</span>
+                </div>
+
+                <div class="chart-wrap">
+                    <canvas id="spendingChart" data-monthly="@monthlyJson"
+                            role="img"
+                            aria-label="Monthly spending chart"></canvas>
+                </div>
+
+                <p id="chartMessage" class="helper-text">
+                    Your recorded purchases will appear here.
+                </p>
+            </article>
+
+            <article class="panel status-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Order Status</h2>
+                        <p>Breakdown of your recorded orders</p>
+                    </div>
+                </div>
+
+                <div class="status-total">
+                    <span id="statusTotal">@Model.Orders.Count</span>
+                    <small>Total orders</small>
+                </div>
+
+                <div class="status-row">
+                    <span><i class="dot completed"></i>Completed</span>
+                    <strong id="statusCompleted">@Model.Completed</strong>
+                </div>
+
+                <div class="status-row">
+                    <span><i class="dot pending"></i>Pending</span>
+                    <strong id="statusPending">@Model.Pending</strong>
+                </div>
+
+                <div class="status-row">
+                    <span><i class="dot processing"></i>Processing</span>
+                    <strong id="statusProcessing">@Model.Processing</strong>
+                </div>
+
+                <div class="status-row">
+                    <span><i class="dot cancelled"></i>Cancelled</span>
+                    <strong id="statusCancelled">@Model.Cancelled</strong>
+                </div>
+            </article>
+        </section>
+
+        <!-- RECENT ORDERS -->
+        <section class="panel orders-panel" id="orders">
+            <div class="panel-heading orders-heading">
+                <div>
+                    <h2>Recent Orders</h2>
+                    <p>Review your latest recorded transactions</p>
+                </div>
+
+                <a href="/Market" class="text-link">
+                    Browse Products →
+                </a>
+            </div>
+
+            <div class="table-scroll" id="ordersTableWrap" hidden="@(Model.Orders.Count == 0)">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+@foreach (var order in Model.Orders.Take(10)) { <tr><td><a href="/Orders/Details/@order.OrderId">@order.OrderNumber</a></td><td>@order.CreatedAt.ToString("yyyy-MM-dd")</td><td>@order.OrderItems.Count</td><td>@order.GrandTotal.ToString("N2") JOD</td><td>@order.OrderStatus</td></tr> }
+</tbody>
+                </table>
+            </div>
+
+            <div class="empty-state" id="emptyOrders" hidden="@(Model.Orders.Count != 0)">
+                <div class="empty-icon">▤</div>
+                <h3>No orders yet</h3>
+                <p>Your purchases will appear here after you place an order.</p>
+                <a href="/Market" class="shop-button">
+                    Explore Products
+                </a>
+            </div>
+        </section>
+
+        <!-- ACTIVITY -->
+        <section class="panel activity-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Shopping Activity</h2>
+                    <p>A summary of your latest recorded activity</p>
+                </div>
+            </div>
+
+            <div id="activityList" class="activity-list">
+@foreach (var order in Model.Orders.Take(5)) { <article class="activity-item"><a href="/Orders/Details/@order.OrderId">@order.OrderNumber</a> · @order.OrderStatus · @order.CreatedAt.ToString("yyyy-MM-dd")</article> }
+</div>
+            <p id="emptyActivity" class="helper-text" hidden>
+                No shopping activity has been recorded yet.
+            </p>
+        </section>
+
+        
+    </main>
+
+    <partial name="_StockFooter" />
+<script defer src="/buyer-dashboard/mvc-chart.js"></script>
+</body>
+</html>
+

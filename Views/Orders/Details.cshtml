@@ -1,5 +1,5 @@
 @model Order
-@{ ViewData["Title"] = "Order details"; }
+@{ if (User.IsInRole("admin")) Layout = "_AdminWorkspace"; ViewData["Title"] = "Order details"; }
 <div class="page-head"><a asp-action="Index">Orders</a><h1>Order details</h1><p>@Model.OrderNumber · <span class="pill">@Model.OrderStatus</span></p></div>
 <div class="grid">
 <section class="panel"><h2>Delivery</h2><p>@Model.ShippingName<br>@Model.ShippingAddress<br>@Model.ShippingCity, @Model.ShippingCountry<br>@Model.ShippingPhone</p></section>

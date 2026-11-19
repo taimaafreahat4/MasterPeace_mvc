@@ -1,0 +1,199 @@
+/* subscription.css
+   Every rule is scoped under .sub-page so it can never clash with
+   navbar.css / footer.css (no global body, .nav, .footer, .brand ... rules). */
+
+body { margin: 0; }
+
+.sub-page {
+  --navy: #061233;
+  --navy-2: #0b1b4d;
+  --ink: #0a1537;
+  --text: #25305a;
+  --muted: #55607f;
+  --purple: #6d2ee6;
+  --purple-dark: #5b21b6;
+  --purple-light: #a78bfa;
+  --lavender: #efe7ff;
+  --line: #ede7fb;
+  --bg: #fbfaff;
+  --gold-1: #f59e0b;
+  --gold-2: #f97316;
+
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #0f1b3d;
+  background: var(--bg);
+}
+
+.sub-page *,
+.sub-page *::before,
+.sub-page *::after { box-sizing: border-box; }
+
+.sub-page button { font-family: inherit; }
+.sub-page :focus-visible { outline: 3px solid var(--purple-light); outline-offset: 3px; }
+
+/* HERO */
+.sub-page .hero {
+  background: radial-gradient(1000px 420px at 50% -10%, #eadfff 0%, var(--bg) 70%);
+  padding: 84px 24px 24px;
+}
+.sub-page .hero__inner {
+  max-width: 860px; margin: 0 auto; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.sub-page .pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 999px; background: #fff;
+  border: 1px solid #e4d8ff; font-size: 12px; font-weight: 700;
+  letter-spacing: 1.6px; color: #6d28d9;
+}
+.sub-page .hero h1 {
+  margin: 0; font-size: clamp(34px, 5vw, 54px); line-height: 1.1;
+  font-weight: 800; letter-spacing: -1.4px; color: var(--ink);
+}
+.sub-page .hero h1 span { color: var(--purple); }
+.sub-page .hero p {
+  margin: 0; max-width: 620px; font-size: 18px; line-height: 1.7; color: var(--muted);
+}
+
+/* PLANS */
+.sub-page .subscription-welcome{max-width:1160px;margin:0 auto 24px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:24px;border:1px solid #ded2ff;border-radius:18px;background:linear-gradient(110deg,#f3edff,#fff);box-shadow:0 12px 32px rgba(48,28,99,.06)}
+.sub-page .subscription-welcome[hidden]{display:none}
+.sub-page .subscription-welcome .eyebrow{color:#6d2ee6;font-size:11px;font-weight:800;letter-spacing:.14em}
+.sub-page .subscription-welcome h2{margin:7px 0 4px;color:#0f1b3d;font-size:22px}
+.sub-page .subscription-welcome p{margin:0;color:#55607f;font-size:14px;line-height:1.6}
+.sub-page .subscription-welcome__free{flex:none;padding:13px 17px;border:1px solid #d9cafb;border-radius:12px;background:#fff;color:#5b21b6;font-size:14px;font-weight:750;text-decoration:none}
+.sub-page .plans { padding: 32px 24px 24px; }
+.sub-page .plans__grid {
+  max-width: 1160px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; gap: 24px;
+  align-items: stretch; justify-content: center;
+}
+
+.sub-page .plan {
+  position: relative;
+  flex: 1 1 280px;
+  max-width: 330px;
+  border-radius: 22px;
+  padding: 25px 22px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  background: #fff;
+  border: 1px solid #e4dcf7;
+  box-shadow: 0 12px 36px -18px rgba(30, 20, 80, 0.25);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.sub-page .plan:hover { transform: translateY(-4px); }
+
+.sub-page .plan.is-selected {
+  background: linear-gradient(160deg, #2a0f6b 0%, var(--navy-2) 100%);
+  border: 2px solid var(--purple-light);
+  box-shadow: 0 30px 70px -20px rgba(109, 46, 230, 0.55);
+  color: #fff;
+}
+
+.sub-page .plan__badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  padding: 7px 16px; border-radius: 999px; white-space: nowrap;
+  background: linear-gradient(90deg, var(--gold-1), var(--gold-2));
+  color: #1f1300; font-size: 12px; font-weight: 800; letter-spacing: 1px;
+}
+
+.sub-page .plan__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sub-page .plan__name { font-size: 14px; font-weight: 700; letter-spacing: 1.4px; color: #6d28d9; }
+.sub-page .plan__save {
+  padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+  background: var(--lavender); color: var(--purple-dark);
+}
+
+.sub-page .plan__price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.sub-page .plan__amount { font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -2px; color: var(--ink); }
+.sub-page .plan__per { font-size: 16px; font-weight: 600; color: var(--muted); }
+.sub-page .plan__sub { font-size: 14px; line-height: 1.6; color: var(--muted); min-height: 22px; margin: 0; }
+
+.sub-page .plan__btn {
+  height: 52px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer;
+  background: #fff; color: var(--purple-dark); border: 1.5px solid var(--purple);
+  transition: transform .15s ease, box-shadow .15s ease;
+  display: flex; justify-content: center; align-items: center; gap: 12px;
+}
+.sub-page .plan__btn:hover { transform: translateY(-1px); }
+.sub-page .plan__btn span { transition: transform .18s ease; }
+.sub-page .plan__btn:hover span { transform: translateX(3px); }
+.sub-page .plan__fine { margin: auto 0 0; padding-top: 2px; color: #7c8499; font-size: 10px; }
+.sub-page .plan.is-selected .plan__fine { color: #c9d0ea; }
+.sub-page .plan__current { position: absolute; right: 16px; top: -12px; padding: 6px 10px; border-radius: 999px; background: #ecfdf5; color: #087a51; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.sub-page .plan.is-current { outline: 2px solid #7c3aed; outline-offset: 2px; }
+.sub-page .subscription-status { max-width: 940px; margin: 0 auto 22px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; border: 1px solid #c9b8f3; border-radius: 14px; background: #f8f5ff; color: #35235f; }
+.sub-page .subscription-status[hidden] { display: none; }
+.sub-page .subscription-status__icon { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; background: #7138db; color: #fff; font-weight: 800; }
+.sub-page .subscription-status strong,.sub-page .subscription-status small { display: block; }
+.sub-page .subscription-status strong { font-size: 12px; }
+.sub-page .subscription-status small { margin-top: 3px; color: #645b78; font-size: 10px; line-height: 1.5; }
+.sub-page .subscription-status a { margin-left: auto; color: #5b2bbd; font-size: 10px; font-weight: 750; text-decoration: none; white-space: nowrap; }
+
+.sub-page .plan__divider { height: 1px; background: var(--line); }
+
+.sub-page .plan__features {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sub-page .plan__features li {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 15px; line-height: 1.5; color: var(--text);
+}
+.sub-page .plan__features svg { flex: none; margin-top: 1px; stroke: var(--purple); }
+
+/* selected plan */
+.sub-page .plan.is-selected .plan__name { color: #c4b5fd; }
+.sub-page .plan.is-selected .plan__amount { color: #fff; }
+.sub-page .plan.is-selected .plan__per,
+.sub-page .plan.is-selected .plan__sub { color: #c9d0ea; }
+.sub-page .plan.is-selected .plan__save { background: #fde68a; color: #3b2a00; }
+.sub-page .plan.is-selected .plan__divider { background: rgba(255, 255, 255, 0.16); }
+.sub-page .plan.is-selected .plan__features li { color: #eef0fa; }
+.sub-page .plan.is-selected .plan__features svg { stroke: #c4b5fd; }
+.sub-page .plan.is-selected .plan__btn {
+  background: linear-gradient(90deg, #8b5cf6, var(--purple)); color: #fff; border: none;
+  box-shadow: 0 12px 26px -8px rgba(139, 92, 246, 0.8);
+}
+
+/* TRUST */
+.sub-page .trust {
+  max-width: 1160px; margin: 28px auto 0; padding: 0; list-style: none;
+  display: flex; flex-wrap: wrap; gap: 12px 36px; justify-content: center;
+  font-size: 14px; font-weight: 600; color: var(--muted);
+}
+.sub-page .trust li { display: flex; align-items: center; gap: 8px; }
+.sub-page .trust svg { color: var(--purple); }
+
+/* FAQ */
+.sub-page .faq { padding: 48px 24px 72px; }
+.sub-page .faq__inner { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.sub-page .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1.6px; color: #6d28d9; }
+.sub-page .faq h2 { margin: 0 0 8px; font-size: 32px; font-weight: 800; letter-spacing: -0.6px; color: var(--ink); }
+.sub-page .faq__item {
+  background: #fff; border: 1px solid #e9e2fa; border-radius: 18px; padding: 22px 26px;
+}
+.sub-page .faq__item summary { font-size: 17px; font-weight: 700; cursor: pointer; }
+.sub-page .faq__item p { margin: 10px 0 0; font-size: 15px; line-height: 1.7; color: var(--muted); }
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .sub-page .subscription-welcome { align-items: stretch; flex-direction: column; padding: 19px; }
+  .sub-page .subscription-welcome__free { text-align: center; }
+  .sub-page .plan { max-width: none; }
+  .sub-page .subscription-status { align-items: flex-start; flex-wrap: wrap; }
+  .sub-page .subscription-status a { width: calc(100% - 42px); margin-left: 42px; }
+}
+
+/* Compact, non-repeating Free and Premium plan overview. */
+.sub-page .plans .freemium-overview{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:0 auto 22px;padding:19px 24px;border-radius:18px}
+.sub-page .plans .freemium-overview h2{margin:5px 0 3px;font-size:21px}
+.sub-page .plans .freemium-overview p{margin:0;color:#69758c;font-size:14px;line-height:1.5}
+.sub-page .free-plan-label{color:#6d35df;font-size:11px;font-weight:800;letter-spacing:.12em}
+.sub-page .free-plan-button{display:inline-flex;flex:none;align-items:center;gap:12px;padding:12px 16px;border:1px solid #d9cafb;border-radius:12px;background:#fff;color:#5b21b6;font-size:14px;font-weight:750;text-decoration:none;transition:background .18s,border-color .18s}
+.sub-page .free-plan-button:hover{border-color:#aa8bf0;background:#f8f4ff}
+@media(max-width:640px){.sub-page .plans .freemium-overview{align-items:stretch;flex-direction:column;gap:15px;padding:18px}.sub-page .free-plan-button{justify-content:center}}

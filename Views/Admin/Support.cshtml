@@ -1,0 +1,23 @@
+@model IEnumerable<SupportTicket>
+@{ ViewData["Title"] = "Support and moderation"; }
+<h1>Support and moderation</h1><partial name="_Nav" />
+<h2>Support tickets</h2>
+@foreach (var item in Model)
+{
+<article class="panel"><h3>@item.Subject <span class="pill">@item.TicketStatus</span></h3><p>@item.Message</p>
+@if (item.GuestEmail is not null) { <p>@item.GuestEmail</p> }
+@if (item.TicketStatus != "closed") { <form asp-action="Close" asp-route-id="@item.TicketId" method="post"><button>Close ticket</button></form> }
+</article>
+}
+<h2>Site feedback</h2>
+@foreach (var item in (IEnumerable<SiteFeedback>)ViewBag.Feedback)
+{
+<article class="panel"><h3>@(item.DisplayName ?? "Guest") <span class="pill">@item.ApprovalStatus</span></h3><p>@item.Message</p>
+<form class="inline" asp-action="ModerateFeedback" asp-route-id="@item.FeedbackId" method="post"><button name="approve" value="true">Approve</button><button class="danger" name="approve" value="false">Reject</button></form></article>
+}
+<h2>Product reviews</h2>
+@foreach (var item in (IEnumerable<Review>)ViewBag.Reviews)
+{
+<article class="panel"><h3>@item.OrderItem.ProductNameSnapshot · @item.Rating / 5 <span class="pill">@item.ApprovalStatus</span></h3><p>@item.Comment</p>
+<form class="inline" asp-action="ModerateFeedback" asp-route-id="@item.ReviewId" method="post"><input type="hidden" name="review" value="true"><button name="approve" value="true">Approve</button><button class="danger" name="approve" value="false">Reject</button></form></article>
+}

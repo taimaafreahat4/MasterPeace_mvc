@@ -1,0 +1,5 @@
+@{ ViewData["Title"] = "Support"; }<h1>Contact support</h1>
+<form class="panel form" asp-action="Help" method="post"><div asp-validation-summary="All"></div>
+@if (User.Identity?.IsAuthenticated != true) { <label>Email <input type="email" name="email" maxlength="255" required></label> }
+<label>Subject <input name="subject" maxlength="200" required></label>
+<label>Message <textarea name="message" maxlength="4000" required></textarea></label><button>Send ticket</button></form>

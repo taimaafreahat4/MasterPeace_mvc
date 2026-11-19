@@ -1,0 +1,14 @@
+@model IEnumerable<Subscription>
+@{ ViewData["Title"] = "Subscriptions"; }
+<h1>Subscriptions</h1><partial name="_Nav" />
+<div class="grid">
+@foreach (var plan in (IEnumerable<SubscriptionPlan>)ViewBag.Plans)
+{
+<article class="panel"><h2>@plan.PlanName</h2><p class="price">@plan.Price.ToString("N2") @plan.Currency</p><p>@plan.DurationMonths month(s)</p>
+<ul>@foreach (var feature in plan.Features) { <li>@feature.FeatureName</li> }</ul>
+<form asp-action="RequestPlan" asp-route-id="@plan.PlanId" method="post"><button>Request plan</button></form></article>
+}
+</div>
+<h2>Subscription history</h2>
+@if (!Model.Any()) { <p class="panel empty">No subscriptions yet.</p> }
+@foreach (var item in Model) { <p class="panel">@item.Plan.PlanName · @(item.Status == "active" && item.EndAt <= DateTime.UtcNow ? "expired" : item.Status == "active" && item.StartAt > DateTime.UtcNow ? "upcoming" : item.Status) · @item.StartAt.ToString("yyyy-MM-dd") to @item.EndAt.ToString("yyyy-MM-dd")</p> }

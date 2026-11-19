@@ -1,0 +1,8 @@
+@model IEnumerable<SiteSetting>
+@{ ViewData["Title"] = "Site settings"; }
+<h1>Site settings</h1><partial name="_Nav" />
+@foreach (var item in Model)
+{
+<form class="panel form" asp-action="Settings" method="post"><input type="hidden" name="key" value="@item.SettingKey">
+<label>@item.SettingKey <textarea name="value" maxlength="2000">@item.SettingValue</textarea></label><button>Save setting</button></form>
+}

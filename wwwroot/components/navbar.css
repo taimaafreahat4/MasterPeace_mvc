@@ -1,0 +1,608 @@
+/* =====================================================
+   NAVBAR
+===================================================== */
+.navbar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    z-index: 99999;
+    background: #061735;
+}
+
+
+/* يعطي كل الصفحات مساحة تحت الـ navbar */
+
+
+/* =====================================================
+   INNER
+===================================================== */
+
+.nav-inner {
+    width: 1320px;
+    max-width: 95%;
+    height: 100%;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    text-decoration: none;
+
+    flex-shrink: 0;
+}
+
+
+.navbar-logo-image {
+    width: 38px;
+    height: 38px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+.navbar-logo-text {
+    color: #ffffff;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.5px;
+}
+
+
+.navbar-logo-text strong {
+    color: #a45cff;
+}
+
+
+/* =====================================================
+   NAV LINKS
+===================================================== */
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    margin-left: 100px;
+}
+
+
+.nav-links a {
+    color: #d9deea;
+
+    text-decoration: none;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+    transition: color 0.2s ease;
+}
+
+
+.nav-links a:hover {
+    color: #a45cff;
+}
+
+
+/* =====================================================
+   RIGHT BUTTONS
+===================================================== */
+
+.nav-actions {
+    margin-left: auto;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+/* LOGIN */
+
+.navbar-login {
+    height: 34px;
+
+    padding: 0 16px;
+
+    border-radius: 20px;
+
+    border: 1px solid #687793;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 10px;
+
+    cursor: pointer;
+}
+
+
+/* SIGN UP */
+
+.navbar-signup {
+    height: 34px;
+
+    padding: 0 17px;
+
+    border-radius: 20px;
+
+    border: none;
+
+    background: #7135e8;
+
+    color: #ffffff;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.navbar-signup:hover {
+    background: #8042f5;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+.mobile-menu {
+    display: none;
+
+    margin-left: auto;
+
+    border: none;
+
+    background: transparent;
+
+    color: white;
+
+    font-size: 22px;
+
+    cursor: pointer;
+}
+
+
+/* =====================================================
+   MOBILE RESPONSIVE
+===================================================== */
+
+@media (max-width: 700px) {
+
+    .navbar {
+        height: 60px;
+    }
+
+
+    .nav-inner {
+        max-width: calc(100% - 30px);
+
+        gap: 0;
+    }
+
+
+    .nav-links,
+    .nav-actions {
+        display: none;
+    }
+
+
+    .mobile-menu {
+        display: block;
+    }
+
+
+    .nav-inner.mobile-open .nav-links {
+
+        display: flex;
+
+        position: absolute;
+
+        top: 60px;
+
+        left: 0;
+        right: 0;
+
+        padding: 20px;
+
+        background: #061735;
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 18px;
+
+        box-sizing: border-box;
+    }
+
+}
+
+/* Cart icon beside Login */
+.navbar-cart-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-left: auto;
+    padding: 0;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+
+.navbar-cart-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.navbar-cart-icon {
+    font-size: 23px;
+    line-height: 1;
+}
+
+.cart-count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #7135e8;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    border: 2px solid #061735;
+}
+
+.cart-count[hidden] {
+    display: none;
+}
+
+.nav-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.navbar-cart-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-right: 2px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.navbar-cart-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-cart-icon {
+    font-size: 22px;
+}
+
+.cart-count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #7135e8;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    border: 2px solid #061735;
+}
+
+.cart-count[hidden] {
+    display: none;
+}
+.logo {
+    margin-right: 70px;
+}
+body {
+    scroll-padding-top: 64px;
+}
+.favorite-icon a{
+
+    position:relative;
+
+    text-decoration:none;
+
+    font-size:22px;
+
+    color:white;
+
+}
+
+
+
+#favoriteCount{
+
+    position:absolute;
+
+    top:-10px;
+
+    right:-12px;
+
+    width:18px;
+
+    height:18px;
+
+    background:#7135e8;
+
+    color:white;
+
+    border-radius:50%;
+
+    font-size:11px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-weight:800;
+
+}
+/* PROFILE */
+
+
+/* USER PROFILE */
+
+/* ===== PROFILE DROPDOWN - FINAL POLISH ===== */
+
+.user-profile {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-trigger {
+    min-width: 62px;
+    padding: 4px 8px;
+    gap: 3px;
+    border-radius: 12px;
+}
+
+.profile-trigger:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.profile-image {
+    width: 43px;
+    height: 43px;
+    border: 2px solid #9b6bff;
+    background: #ffffff;
+}
+
+#username {
+    font-size: 12px;
+    margin-top: 1px;
+}
+
+.profile-arrow {
+    top: 12px;
+    right: -1px;
+    font-size: 12px;
+}
+
+/* Dropdown panel */
+.profile-menu {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    left: auto !important;
+    width: 245px !important;
+    max-width: calc(100vw - 24px);
+    padding: 8px !important;
+    background: #ffffff !important;
+    border: 1px solid #e8e5f0 !important;
+    border-radius: 15px !important;
+    box-shadow: 0 12px 35px rgba(6, 23, 53, 0.18) !important;
+    overflow: hidden;
+    z-index: 10000 !important;
+}
+
+.profile-menu[hidden] {
+    display: none !important;
+}
+
+#sellerStoreProfileLink[hidden] {
+    display: none !important;
+}
+
+/* Bootstrap Icons for the three navbar actions, normalized to one visual size. */
+#navActions .navbar-action-icon {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 22px;
+    font-size: 21px;
+    line-height: 1;
+}
+
+#navActions .navbar-notification-trigger .navbar-action-icon,
+#navActions .navbar-cart-link .navbar-action-icon {
+    color: #ffffff;
+}
+
+#navActions .favorite-icon .navbar-action-icon {
+    color: #bd91ff;
+}
+
+/* Slightly larger navigation labels with a soft Stock Mind glow on hover. */
+#navLinks a {
+    color: #ffffff !important;
+    font-size: 14px !important;
+    transition: color .2s ease, text-shadow .2s ease;
+}
+
+#navLinks a:hover,
+#navLinks a:focus-visible {
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(196, 163, 255, .95), 0 0 18px rgba(139, 92, 246, .72);
+    outline: none;
+}
+
+.dropdown-user {
+    padding: 12px 12px 14px !important;
+    margin-bottom: 6px !important;
+    border-bottom: 1px solid #eeeaf5 !important;
+}
+
+.dropdown-user strong {
+    font-size: 14px !important;
+    color: #061735 !important;
+}
+
+.dropdown-user small {
+    font-size: 12px !important;
+    color: #7b8498 !important;
+    overflow-wrap: anywhere;
+}
+
+.profile-menu a,
+.profile-menu button {
+    display: flex !important;
+    align-items: center;
+    gap: 11px !important;
+    min-height: 43px !important;
+    padding: 10px 12px !important;
+    margin: 2px 0;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: transparent;
+    color: #26334b !important;
+    font-size: 13px !important;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    text-decoration: none !important;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.profile-menu a:hover,
+.profile-menu button:hover {
+    background: #f3edff !important;
+    color: #7135e8 !important;
+}
+
+.profile-menu .menu-icon {
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 16px;
+}
+
+.profile-menu #logoutBtn {
+    margin-top: 6px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #eeeaf5 !important;
+    border-radius: 9px !important;
+    color: #dc3545 !important;
+}
+
+.profile-menu #logoutBtn:hover {
+    background: #fff0f1 !important;
+    color: #c82333 !important;
+}
+
+/* Keep dropdown within small screens */
+@media (max-width: 700px) {
+    .profile-menu {
+        right: 0 !important;
+        width: 235px !important;
+        max-width: calc(100vw - 24px);
+    }
+}
+.nav-links {
+    transform: translateX(60px) !important;
+}
+
+/* Notifications are a separate navbar action; existing controls keep their styles. */
+#navActions .navbar-notifications { position:relative; flex:0 0 38px; width:38px; height:38px; }
+#navActions .navbar-notification-trigger { position:relative; display:grid; width:38px; height:38px; place-items:center; padding:0; border:0; border-radius:10px; background:transparent; color:#fff; cursor:pointer; transition:background .18s ease; }
+#navActions .navbar-notification-trigger:hover,#navActions .navbar-notification-trigger[aria-expanded="true"] { background:rgba(255,255,255,.1); }
+#navActions .navbar-notification-trigger svg { display:block; width:21px; height:21px; }
+#navActions .notification-count { position:absolute; top:0; right:0; display:grid; min-width:17px; height:17px; padding:0 4px; place-items:center; border:2px solid #061735; border-radius:99px; background:#8548f5; color:#fff; font:800 9px/1 Arial,sans-serif; }
+#navActions .notification-count[hidden] { display:none; }
+.notification-panel { position:absolute; z-index:10020; top:calc(100% + 12px); right:-42px; width:min(370px,calc(100vw - 24px)); overflow:hidden; border:1px solid #e8e8f1; border-radius:16px; background:#fff; color:#14213f; box-shadow:0 20px 55px rgba(5,15,39,.22); }
+.notification-panel[hidden] { display:none; }
+.notification-panel__header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; border-bottom:1px solid #eeeef4; }
+.notification-panel__header strong,.notification-panel__header small { display:block; }
+.notification-panel__header strong { font-size:14px; }
+.notification-panel__header small { margin-top:4px; color:#737e94; font-size:12px; }
+.notification-panel__actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+.notification-panel__actions button { padding:8px 10px; border:0; border-radius:8px; background:#f4efff; color:#7047ed; font-size:12px; font-weight:750; cursor:pointer; }
+.notification-list { max-height:min(390px,65vh); overflow:auto; }
+.notification-item { display:grid; grid-template-columns:36px minmax(0,1fr); gap:11px; padding:13px 16px; border-bottom:1px solid #f0f1f5; color:inherit; text-decoration:none; }
+.notification-item:hover,.notification-item.is-unread { background:#faf8ff; }
+.notification-item__icon { display:grid; width:40px; height:40px; place-items:center; border-radius:12px; background:#f0eaff; color:#7047ed; font-size:18px; }
+.notification-item[data-kind="shipping"] .notification-item__icon { background:#eaf2ff; color:#4776e6; }
+.notification-item[data-kind="delivered"] .notification-item__icon { background:#e9f8ef; color:#168b69; }
+.notification-item__copy strong,.notification-item__copy small,.notification-item__copy time { display:block; }
+.notification-item__copy strong { color:#1a2543; font-size:13px; line-height:1.5; }
+.notification-item__copy small { margin-top:3px; color:#66728b; font-size:12px; line-height:1.55; }
+.notification-item__copy time { margin-top:6px; color:#78849a; font-size:11px; }
+.notification-empty { padding:30px 18px; color:#68758d; text-align:center; font-size:13px; line-height:1.6; }
+.notification-empty span { display:block; margin-bottom:7px; color:#9b80ef; font-size:22px; }
+.stock-mind-toast { position:fixed; z-index:20000; top:82px; left:50%; display:grid; grid-template-columns:38px minmax(0,1fr) 28px; align-items:start; gap:12px; width:min(460px,calc(100vw - 28px)); padding:15px; border:1px solid rgba(124,82,238,.2); border-radius:16px; background:rgba(255,255,255,.98); color:#17213e; box-shadow:0 18px 55px rgba(9,20,48,.22); opacity:0; transform:translate(-50%,-14px); transition:opacity .22s ease,transform .22s ease; backdrop-filter:blur(14px); }
+.stock-mind-toast.is-visible { opacity:1; transform:translate(-50%,0); }
+.stock-mind-toast__icon { display:grid; width:38px; height:38px; place-items:center; border-radius:12px; background:#eee8ff; color:#7047ed; font-size:17px; }
+.stock-mind-toast__copy strong,.stock-mind-toast__copy small { display:block; }
+.stock-mind-toast__copy strong { font-size:12px; line-height:1.5; }
+.stock-mind-toast__copy small { margin-top:3px; color:#707b93; font-size:11px; line-height:1.5; }
+.stock-mind-toast__close { border:0; background:transparent; color:#8590a5; font-size:17px; cursor:pointer; }
+.stock-mind-toast__link { display:inline-block; margin-top:8px; color:#7047ed; font-size:10px; font-weight:800; text-decoration:none; }
+@media(max-width:700px) { .notification-panel { right:0; } .stock-mind-toast { top:76px; width:calc(100vw - 24px); } }

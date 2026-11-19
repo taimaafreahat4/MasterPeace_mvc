@@ -1,0 +1,17 @@
+@model ProductForm
+@{ ViewData["Title"] = Model.Id == 0 ? "Add product" : "Edit product"; }
+<h1>@ViewData["Title"]</h1><partial name="_Nav" />
+<form class="panel form" asp-action="Edit" method="post"><div asp-validation-summary="All"></div><input type="hidden" asp-for="Id">
+<label>Name <input asp-for="Name"></label>
+<label>Description <textarea asp-for="Description"></textarea></label>
+<label>Category <select asp-for="CategoryId"><option value="">Choose category</option>
+@foreach (var category in (IEnumerable<Category>)ViewBag.Categories) { <option value="@category.CategoryId">@category.CategoryName</option> }
+</select></label>
+<label>Image URL <input asp-for="ImageUrl" placeholder="https://"></label>
+<label>Available stock (units) <input asp-for="Quantity"></label>
+<label>Reorder level <input asp-for="ReorderLevel"></label>
+<label>Price per unit or whole lot (JOD) <input asp-for="Price" type="number" step="0.01"></label>
+<label>Minimum quantity for unit sales <input asp-for="Minimum"></label>
+<label><input asp-for="WholeLot"> Sell as a whole lot</label>
+<label>Units per lot <input asp-for="LotUnits"></label>
+<button>Submit for review</button></form>

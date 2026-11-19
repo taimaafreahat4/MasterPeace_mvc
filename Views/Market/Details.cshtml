@@ -1,0 +1,28 @@
+@model Listing
+@{ ViewData["Title"] = Model.Product.ProductName; }
+<div class="details"><partial name="_Photo" model="Model.Product" />
+<div><p class="pill">@Model.Product.Category.CategoryName</p><h1>@Model.Product.ProductName</h1>
+<p class="muted">@Model.Product.Seller.StoreName · @Model.Product.ProductCondition</p>
+<p>@Model.Product.Description</p><p class="price">@Commerce.Price(Model).ToString("N2") JOD @(Model.SellingMethod == "whole_lot" ? $"per lot of {Model.LotUnits}" : "per unit")</p>
+<p>@Model.ListingQuantity units available · Minimum @Commerce.Minimum(Model) @(Model.SellingMethod == "whole_lot" ? "lot" : "units")</p>
+@if (User.IsInRole("buyer"))
+{
+    <div class="row">
+    @if (Commerce.InStock(Model, Commerce.Minimum(Model)))
+    {
+        <form class="inline" asp-controller="Cart" asp-action="Set" asp-route-id="@Model.ListingId" method="post">
+        <input type="number" name="quantity" min="@Commerce.Minimum(Model)" max="@(Model.SellingMethod == "whole_lot" ? 1 : Model.ListingQuantity)" value="@Commerce.Minimum(Model)" aria-label="Quantity" required>
+        <button name="add" value="true">Add to cart</button></form>
+    }
+    <form asp-action="Favorite" asp-route-id="@Model.ListingId" method="post"><button class="quiet">Save to favorites</button></form>
+    </div>
+}
+else if (User.Identity?.IsAuthenticated != true)
+{
+    <a class="button" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Sign in to order</a>
+}
+</div></div>
+<section class="section"><h2>Buyer reviews</h2>
+@foreach (var review in (IEnumerable<Review>)ViewBag.Reviews) { <article class="panel"><strong>@review.Rating / 5 · @review.Reviewer.FullName</strong><p>@review.Comment</p></article> }
+@if (((IEnumerable<Review>)ViewBag.Reviews).Any() == false) { <p class="muted">No published reviews yet.</p> }
+</section>

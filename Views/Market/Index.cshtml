@@ -1,0 +1,13 @@
+@model IEnumerable<Listing>
+@{ ViewData["Title"] = "Marketplace"; }
+<div class="page-head"><h1>Marketplace</h1><p class="muted">Browse inventory by category, product or store.</p></div>
+<form class="panel inline" asp-action="Index" method="get">
+<input aria-label="Search products" name="q" placeholder="Search products" value="@ViewBag.Query">
+<select name="category" aria-label="Category">
+<option value="">All categories</option>
+@foreach (var category in (IEnumerable<Category>)ViewBag.Categories)
+{
+    <option value="@category.CategoryId" selected="@(ViewBag.Category == category.CategoryId)">@category.CategoryName</option>
+}
+</select><button>Search</button></form>
+<partial name="_Cards" model="Model" />

@@ -1,0 +1,644 @@
+@model LandingViewModel
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Stock Mind | Smarter Inventory</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+    <link rel="stylesheet" href="/css/stock-brand.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/home/style.css">
+    <link rel="stylesheet" href="/home/stockmind-journey.css">
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+
+<body>
+
+<partial name="_StockNavigation" />
+@if (TempData["Notice"] is string notice) { <p class="stock-home-notice" role="status">@notice</p> }
+    <!-- Public cinematic homepage hero. The fixed navbar remains above this pinned scene. -->
+    <section class="sm-journey" id="home" aria-label="From chaos to intelligence">
+        <div class="sm-journey__pin">
+            <canvas class="sm-journey__canvas" aria-label="Procedural 3D warehouse and smart conveyor experience"></canvas>
+            <div class="sm-journey__vignette" aria-hidden="true"></div>
+            <div class="sm-journey__topline"><span>STOCK MIND / SMART INVENTORY</span><span>FROM CHAOS TO INTELLIGENCE</span></div>
+            <div class="sm-journey__copy" aria-live="polite">
+                <div class="sm-journey__scene is-active" data-scene="0"><span class="sm-journey__eyebrow">THE CHAOS</span><h1>Inventory is complicated.<br><em>Managing it shouldn’t be.</em></h1><p>Transform inventory chaos into intelligent business decisions.</p><div class="sm-journey__scroll"><span></span> SCROLL TO EXPLORE</div></div>
+                <div class="sm-journey__scene" data-scene="1"><span class="sm-journey__eyebrow">THE CONVEYOR AWAKENS</span><h2>Every product<br><em>has potential.</em></h2><p>Discover what’s happening inside your inventory.</p></div>
+                <div class="sm-journey__scene" data-scene="2"><span class="sm-journey__eyebrow">INVENTORY INSIGHTS</span><h2>Understand your stock.<br><em>Unlock better decisions.</em></h2><p>Inventory management · Before You Buy · Product recommendations · Demand forecasting</p><div class="sm-journey__data"><span>VISUAL DEMONSTRATION</span><b>Smart Inventory Item</b><small>120 units <i>•</i> High demand <i>•</i> Review recommended</small></div></div>
+                <div class="sm-journey__scene" data-scene="3"><span class="sm-journey__eyebrow">SMART SORTING</span><h2>Know what to keep.<br><em>Know what to sell.</em></h2><p>One clear decision turns surplus into opportunity.</p><div class="sm-journey__routes"><span>KEEP &amp; MANAGE</span><span>SELL SURPLUS</span></div></div>
+                <div class="sm-journey__scene" data-scene="4"><span class="sm-journey__eyebrow">MARKETPLACE</span><h2>One seller’s surplus.<br><em>Another seller’s opportunity.</em></h2><p>Move the right stock to the business that needs it.</p><div class="sm-journey__trade"><span>SELLER A</span><b>STOCK MIND MARKETPLACE</b><span>SELLER B</span></div><div class="sm-journey__purchase"><span><b>BUY BY QUANTITY</b><small>Choose the units you need.</small></span><span><b>WHOLE LOT</b><small>Purchase the complete lot.</small></span></div></div>
+                <div class="sm-journey__scene sm-journey__final" data-scene="5"><img src="/components/logo.png" alt="Stock Mind logo"><span class="sm-journey__eyebrow">STOCK MIND</span><h2>Smarter inventory.<br><em>Stronger business.</em></h2><p>Analyze smarter. Manage better. Trade with confidence.</p><div class="sm-journey__actions"><a href="/Account/Login" class="sm-journey__button sm-journey__button--primary">Get Started <span>↗</span></a><a href="/Market" class="sm-journey__button">Explore Marketplace <span>↗</span></a></div></div>
+            </div>
+            <div class="sm-journey__hud"><span class="sm-journey__hud-dot"></span><span data-hud>CHAOS → CLARITY</span><span class="sm-journey__progress"><i></i></span></div>
+            <div class="sm-journey__fallback"><b>From chaos to intelligence.</b><span>Make confident inventory decisions with Stock Mind.</span><div><a href="/Account/Login">Get Started</a><a href="/Market">Explore Marketplace</a></div></div>
+        </div>
+    </section>
+    <!-- =========================
+         CATEGORIES
+    ========================== -->
+
+    <section class="categories-section" id="categories">
+
+        <div class="container">
+
+            <div class="center-heading">
+
+                <div class="section-label">
+                    BROWSE BY CATEGORY
+                </div>
+
+                <h2 class="section-title">
+                    Explore Our Categories
+                </h2>
+
+                <p class="section-subtitle">
+                    Find the right products, discover new opportunities,
+                    and manage your inventory smarter with AI.
+                </p>
+
+            </div>
+
+
+            <div class="categories-grid" id="categoriesGrid">
+
+<!-- Clothing -->
+<a href="/Market?categoryName=Clothing" class="category-card">
+    <img
+        class="category-image"
+        src="/Images/clothes/G74258s.webp"
+        alt="Clothing"
+    >
+
+    <div class="category-info">
+
+        <div class="category-icon">
+            <i class="fa-solid fa-shirt"></i>
+        </div>
+
+        <div class="category-name">
+            Clothing
+        </div>
+
+        <div class="category-products">
+            @(Model.Category("Clothing")?.Listings ?? 0) products
+        </div>
+
+        <div class="category-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+        </div>
+
+    </div>
+
+</a>
+
+                <!-- Shoes -->
+
+                <div class="category-card" data-name="shoes">
+
+                    <img
+                        class="category-image"
+                        src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80"
+                        alt="Shoes"
+                    >
+
+                    <div class="category-info">
+
+                        <div class="category-icon">
+                            <i class="fa-solid fa-shoe-prints"></i>
+                        </div>
+
+                        <div class="category-name">
+                            <a class="stock-category-link" href="/Market?categoryName=Shoes">Shoes</a>
+                        </div>
+
+                        <div class="category-products">
+                            @(Model.Category("Shoes")?.Listings ?? 0) products
+                        </div>
+
+                        <div class="category-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Cosmetics -->
+
+                <div class="category-card" data-name="cosmetics">
+
+                    <img
+                        class="category-image"
+                        src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80"
+                        alt="Cosmetics"
+                    >
+
+                    <div class="category-info">
+
+                        <div class="category-icon">
+                            <i class="fa-regular fa-heart"></i>
+                        </div>
+
+                        <div class="category-name">
+                            <a class="stock-category-link" href="/Market?categoryName=Beauty%20%26%20Personal%20Care">Cosmetics</a>
+                        </div>
+
+                        <div class="category-products">
+                            @(Model.Category("Beauty & Personal Care")?.Listings ?? 0) products
+                        </div>
+
+                        <div class="category-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Electronics -->
+
+                <div class="category-card" data-name="electronics">
+
+                    <img
+                        class="category-image"
+                        src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=700&q=80"
+                        alt="Electronics"
+                    >
+
+                    <div class="category-info">
+
+                        <div class="category-icon">
+                            <i class="fa-solid fa-laptop"></i>
+                        </div>
+
+                        <div class="category-name">
+                            <a class="stock-category-link" href="/Market?categoryName=Electronics">Electronics</a>
+                        </div>
+
+                        <div class="category-products">
+                            @(Model.Category("Electronics")?.Listings ?? 0) products
+                        </div>
+
+                        <div class="category-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Home & Kitchen -->
+
+                <div class="category-card" data-name="home kitchen">
+
+                    <img
+                        class="category-image"
+                        src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=700&q=80"
+                        alt="Home and Kitchen"
+                    >
+
+                    <div class="category-info">
+
+                        <div class="category-icon">
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+
+                        <div class="category-name">
+                            <a class="stock-category-link" href="/Market?categoryName=Home%20%26%20Kitchen">Home &amp; Kitchen</a>
+                        </div>
+
+                        <div class="category-products">
+                            @(Model.Category("Home & Kitchen")?.Listings ?? 0) products
+                        </div>
+
+                        <div class="category-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Accessories -->
+
+                <div class="category-card" data-name="accessories">
+
+                    <img
+                        class="category-image"
+                        src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=700&q=80"
+                        alt="Accessories"
+                    >
+
+                    <div class="category-info">
+
+                        <div class="category-icon">
+                            <i class="fa-solid fa-gem"></i>
+                        </div>
+
+                        <div class="category-name">
+                            <a class="stock-category-link" href="/Market?categoryName=Accessories">Accessories</a>
+                        </div>
+
+                        <div class="category-products">
+                            @(Model.Category("Accessories")?.Listings ?? 0) products
+                        </div>
+
+                        <div class="category-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Sports -->
+
+                <div class="category-card" data-name="sports">
+
+                    <img
+                        class="category-image"
+                        src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=700&q=80"
+                        alt="Sports"
+                    >
+
+                    <div class="category-info">
+
+                        <div class="category-icon">
+                            <i class="fa-solid fa-dumbbell"></i>
+                        </div>
+
+                        <div class="category-name">
+                            <a class="stock-category-link" href="/Market?categoryName=Sports">Sports</a>
+                        </div>
+
+                        <div class="category-products">
+                            @(Model.Category("Sports")?.Listings ?? 0) products
+                        </div>
+
+                        <div class="category-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Others -->
+
+                <div class="category-card" data-name="others watches">
+
+                    <img
+                        class="category-image"
+                        src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80"
+                        alt="Others"
+                    >
+
+                    <div class="category-info">
+
+                        <div class="category-icon">
+                            <i class="fa-solid fa-table-cells"></i>
+                        </div>
+
+                        <div class="category-name">
+                            <a class="stock-category-link" href="/Market?categoryName=Others">Others</a>
+                        </div>
+
+                        <div class="category-products">
+                            @(Model.Category("Others")?.Listings ?? 0) products
+                        </div>
+
+                        <div class="category-arrow">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+<!-- =========================
+     ABOUT STOCKMIND
+     (استبدل السكشن القديم كامل بهاد الكود)
+========================== -->
+<section class="am-section" id="about">
+
+    <div class="am-wrap">
+
+        <!-- ========== TOP: TEXT + CART ========== -->
+        <div class="am-top">
+
+            <!-- LEFT -->
+            <div class="am-content">
+
+                <span class="am-pill am-reveal" style="--d:0s">
+                    <i class="fa-solid fa-cube"></i>
+                    ABOUT STOCKMIND
+                </span>
+
+                <h2 class="am-title am-reveal" style="--d:.08s">
+                    Smarter Inventory
+                    <span>for a Stronger Tomorrow</span>
+                </h2>
+
+                <p class="am-text am-reveal" style="--d:.16s">
+                    StockMind is an AI-powered platform designed to help merchants
+                    and businesses avoid overstocking, reduce dead stock, and
+                    maximize profits. With data-driven insights, we make inventory
+                    smarter, faster, and easier.
+                </p>
+
+                <div class="am-stats am-reveal" style="--d:.24s">
+
+                    <div class="am-stat">
+                        <div class="am-stat-icon"><i class="fa-solid fa-user-group"></i></div>
+                        <div>
+                            <strong>Stock</strong>
+                            <small>Inventory visibility</small>
+                        </div>
+                    </div>
+
+                    <div class="am-stat">
+                        <div class="am-stat-icon"><i class="fa-solid fa-cube"></i></div>
+                        <div>
+                            <strong>Market</strong>
+                            <small>Seller-to-buyer connection</small>
+                        </div>
+                    </div>
+
+                    <div class="am-stat">
+                        <div class="am-stat-icon"><i class="fa-solid fa-bullseye"></i></div>
+                        <div>
+                            <strong>Insights</strong>
+                            <small>Evidence-led decisions</small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <a href="/Home/About" class="am-btn am-reveal" style="--d:.32s">
+                    Learn More About Us
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+            </div>
+
+
+            <!-- RIGHT: نفس أنميشن السلة -->
+            <div class="am-visual am-reveal" style="--d:.2s">
+
+                <span class="am-spark s1">✦</span>
+                <span class="am-spark s2">✦</span>
+                <span class="am-spark s3">✦</span>
+
+                <div class="about-image">
+                    <img src="/home/images/inventory-animation.svg" alt="Inventory Animation">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========== FEATURE CARDS ========== -->
+        <div class="am-features">
+
+            <article class="am-card am-reveal" style="--d:.05s">
+                <div class="am-card-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                <h4>AI Demand Prediction</h4>
+                <p>Know what will sell before you buy.</p>
+                <div class="am-art">
+                    <i class="fa-solid fa-chart-column am-art-main"></i>
+                </div>
+            </article>
+
+            <article class="am-card am-reveal" style="--d:.15s">
+                <div class="am-card-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <h4>Location &amp; Time Analysis</h4>
+                <p>Understand market trends and seasonal demand.</p>
+                <div class="am-art">
+                    <i class="fa-solid fa-map-location-dot am-art-main"></i>
+                </div>
+            </article>
+
+            <article class="am-card am-reveal" style="--d:.25s">
+                <div class="am-card-icon"><i class="fa-solid fa-user-group"></i></div>
+                <h4>Customer Insights</h4>
+                <p>Analyze audience behavior and preferences.</p>
+                <div class="am-art">
+                    <i class="fa-solid fa-user-tie am-art-main"></i>
+                </div>
+            </article>
+
+            <article class="am-card am-reveal" style="--d:.35s">
+                <div class="am-card-icon"><i class="fa-solid fa-star"></i></div>
+                <h4>Smart Recommendations</h4>
+                <p>Get the right products at the right time.</p>
+                <div class="am-art">
+                    <i class="fa-solid fa-box-open am-art-main"></i>
+                </div>
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+    <!-- =========================
+         HOW STOCKMIND WORKS
+    ========================== -->
+<section class="steps-section" id="steps">
+
+    <div class="steps-header">
+        <span>SIMPLE STEPS</span>
+        <h2>
+            How <b>StockMind</b> Works
+        </h2>
+        <p>
+            From prediction to action — everything you need in one platform.
+        </p>
+    </div>
+
+
+    <div class="steps-container">
+
+
+        <div class="step-card">
+            <div class="number">01</div>
+
+            <div class="step-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+
+            <h3>Predict Demand</h3>
+
+            <p>
+                Our AI analyzes location, season,
+                customers and past data to predict
+                what will sell.
+            </p>
+        </div>
+
+
+
+        <div class="arrow">
+            →
+        </div>
+
+
+        <div class="step-card">
+            <div class="number">02</div>
+
+            <div class="step-icon">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+
+            <h3>Get Recommendations</h3>
+
+            <p>
+                Receive smart suggestions on
+                what to buy, how much to buy,
+                and when.
+            </p>
+        </div>
+
+
+
+        <div class="arrow">
+            →
+        </div>
+
+
+
+        <div class="step-card">
+            <div class="number">03</div>
+
+            <div class="step-icon">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+
+            <h3>Manage Existing Stock</h3>
+
+            <p>
+                Find products at risk of becoming
+                dead stock and get solutions.
+            </p>
+        </div>
+
+
+
+        <div class="arrow">
+            →
+        </div>
+
+
+
+        <div class="step-card">
+            <div class="number">04</div>
+
+            <div class="step-icon">
+                <i class="fa-solid fa-chart-column"></i>
+            </div>
+
+            <h3>Grow Your Business</h3>
+
+            <p>
+                Make better decisions,
+                reduce losses and increase profits.
+            </p>
+
+        </div>
+
+
+    </div>       
+
+</section>   <!-- ✅ أضف هاد السطر: نهاية steps-section -->
+
+<section class="testimonials" id="testimonials">
+
+    <div class="testimonial-bg"></div>
+    <div class="testimonial-bg bg2"></div>
+
+    <div class="container">
+
+        <div class="center-heading">
+            <div class="section-label">WHAT OUR USERS SAY</div>
+
+            <h2 class="section-title">
+                What merchants <span>say</span>
+            </h2>
+
+            <p class="section-subtitle">
+                Merchant and customer feedback appears here after review and approval.
+            </p>
+        </div>
+
+        <div class="t-stage" id="tStage">
+
+            <div class="t-arc"><span></span><span></span><span></span></div>
+
+            <!-- الكاردات بتنبني من testimonials.js -->
+            <div class="t-track" id="tTrack">
+    @for (var i = 0; i < Model.Feedback.Count; i++)
+    {
+        var item = Model.Feedback[i];
+        <article class="t-card active stock-feedback" hidden="@(i != 0)">
+            <h3>@(item.DisplayName ?? "StockMind customer")</h3>
+            @if (item.Rating is byte rating) { <div class="t-stars" aria-label="@rating out of 5 stars">@(new string('★', rating))</div> }
+            <p>@item.Message</p>
+        </article>
+    }
+    @if (Model.Feedback.Count == 0) { <article class="t-card stock-feedback"><p>No approved feedback yet.</p></article> }
+</div>
+
+            <button hidden class="t-arrow t-prev" id="tPrev" aria-label="Previous">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button hidden class="t-arrow t-next" id="tNext" aria-label="Next">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+
+        </div>
+
+        <div class="t-dots" id="tDots"></div>
+
+    </div>
+</section>
+
+    
+<partial name="_StockFooter" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script type="module" src="/home/stockmind-journey.js" onerror="document.getElementById('home')?.classList.add('sm-journey--static')"></script>
+<script type="module" src="/home/mvc-home.js"></script>
+</body>
+</html>

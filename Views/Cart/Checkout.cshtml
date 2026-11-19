@@ -1,0 +1,13 @@
+@model ShippingForm
+@{ ViewData["Title"] = "Checkout"; }
+<h1>Checkout</h1>
+<form class="panel form" asp-action="Checkout" method="post">
+<div asp-validation-summary="All"></div>
+<h2>Delivery address</h2>
+<label>Recipient name <input asp-for="Name" autocomplete="name"></label>
+<label>Phone <input asp-for="Phone" type="tel" autocomplete="tel"></label>
+<label>Country <input asp-for="Country" autocomplete="country-name"></label>
+<label>City <input asp-for="City" autocomplete="address-level2"></label>
+<label>Street address <textarea asp-for="Address" autocomplete="street-address"></textarea></label>
+<p>Payment method <strong>Cash on delivery</strong></p><button>Place order</button>
+</form>

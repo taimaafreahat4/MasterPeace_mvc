@@ -1,0 +1,8 @@
+@model IEnumerable<Notification>
+@{ ViewData["Title"] = "Notifications"; }
+<div class="row between"><h1>Notifications</h1>
+@if (Model.Any(n => !n.IsRead)) { <form asp-action="Read" method="post"><button class="quiet">Mark all as read</button></form> }</div>
+@if (!Model.Any()) { <p class="panel empty">No notifications yet.</p> }
+@foreach (var item in Model) {
+<article class="panel"><h3>@item.Title @if (!item.IsRead) { <span class="pill">New</span> }</h3><p>@item.Body</p><small>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</small></article>
+}

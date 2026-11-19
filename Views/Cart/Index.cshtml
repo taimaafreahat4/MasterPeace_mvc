@@ -1,0 +1,18 @@
+@model IEnumerable<CartItem>
+@{ ViewData["Title"] = "Cart"; }
+<h1>Your cart</h1>
+@if (!Model.Any()) { <p class="panel empty">Your cart is empty. <a asp-controller="Market" asp-action="Index">Browse products</a></p> }
+else
+{
+<div class="table-wrap"><table><thead><tr><th>Product</th><th>Unit / lot price</th><th>Quantity</th><th>Amount</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+<tr><td>@item.Listing.Product.ProductName</td><td>@Commerce.Price(item.Listing).ToString("N2") JOD</td><td>
+<div class="inline"><form class="inline" asp-action="Set" asp-route-id="@item.ListingId" method="post">
+<input type="number" name="quantity" value="@item.Quantity" min="@Commerce.Minimum(item.Listing)" aria-label="Quantity" required><button class="quiet">Update</button></form>
+<form asp-action="Set" asp-route-id="@item.ListingId" method="post"><button class="danger" name="quantity" value="0">Remove</button></form></div></td>
+<td>@((Commerce.Price(item.Listing) * item.Quantity).ToString("N2")) JOD</td></tr>
+}
+</tbody></table></div>
+<div class="panel row between"><strong>Subtotal @Model.Sum(i => Commerce.Price(i.Listing) * i.Quantity).ToString("N2") JOD</strong><a class="button" asp-action="Checkout">Checkout</a></div>
+}

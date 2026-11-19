@@ -1,0 +1,6 @@
+@model IEnumerable<Listing>
+@{ ViewData["Title"] = "Favorites"; }<h1>Favorites</h1>
+<partial name="_Cards" model="Model" />
+@if (Model.Any()) { <section class="section"><h2>Manage favorites</h2>
+@foreach (var listing in Model) { <form class="inline panel" asp-action="Favorite" asp-route-id="@listing.ListingId" method="post"><span>@listing.Product.ProductName</span><button class="quiet" name="remove" value="true">Remove</button></form> }
+</section> }

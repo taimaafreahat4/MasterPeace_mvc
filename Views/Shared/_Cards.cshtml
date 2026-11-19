@@ -1,0 +1,17 @@
+@model IEnumerable<Listing>
+@if (!Model.Any()) { <p class="panel empty">No listings found.</p> }
+else
+{
+<div class="grid">
+@foreach (var listing in Model)
+{
+<article class="card">
+<partial name="_Photo" model="listing.Product" />
+<small>@listing.Product.Category.CategoryName · @listing.Product.Seller.StoreName</small>
+<h3><a asp-controller="Market" asp-action="Details" asp-route-id="@listing.ListingId">@listing.Product.ProductName</a></h3>
+<div class="row between"><span class="price">@Commerce.Price(listing).ToString("N2") JOD</span>
+<span class="pill">@(listing.SellingMethod == "whole_lot" ? "Whole lot" : $"{listing.ListingQuantity} units")</span></div>
+</article>
+}
+</div>
+}

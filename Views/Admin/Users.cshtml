@@ -1,0 +1,23 @@
+@model IEnumerable<User>
+@{ ViewData["Title"] = "Users and sellers"; }
+<h1>Users and sellers</h1><partial name="_Nav" />
+<div class="table-wrap"><table><thead><tr><th>Account</th><th>Role</th><th>Account status</th><th>Seller verification</th></tr></thead><tbody>
+@foreach (var member in Model)
+{
+<tr><td><strong>@member.FullName</strong><br><small>@member.Email</small></td><td>@member.Role.RoleName</td>
+<td><div class="inline"><span class="pill">@member.AccountStatus</span>
+@if (member.Role.RoleName != "admin")
+{
+<form asp-action="UserStatus" asp-route-id="@member.UserId" method="post">
+<button class="quiet" name="active" value="@(member.AccountStatus == "active" ? "false" : "true")">@(member.AccountStatus == "active" ? "Suspend" : "Activate")</button></form>
+}
+</div></td><td>
+@if (member.SellerProfile is { } seller)
+{
+<strong>@seller.StoreName</strong> <span class="pill">@seller.VerificationStatus</span>
+<form class="inline" asp-action="Verify" asp-route-id="@seller.SellerId" method="post">
+<button name="approve" value="true">Approve</button><button class="danger" name="approve" value="false">Reject</button></form>
+}
+</td></tr>
+}
+</tbody></table></div>

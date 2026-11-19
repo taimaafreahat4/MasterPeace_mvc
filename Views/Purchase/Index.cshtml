@@ -1,0 +1,14 @@
+@model PurchaseForm
+@{ ViewData["Title"] = "Purchase analysis"; }
+<a asp-controller="Seller" asp-action="Insights">Stock insights</a>
+<h1>Purchase analysis</h1>
+<p>Compare the proposed buying cost and selling price. The estimate uses gross margin before expenses.</p>
+<form class="panel form" asp-action="Index" method="post"><div asp-validation-summary="All"></div>
+<label>Product name <input asp-for="ProductName"></label>
+<label>Category <select asp-for="CategoryId"><option value="">Choose category</option>
+@foreach (var category in (IEnumerable<Category>)ViewBag.Categories) { <option value="@category.CategoryId">@category.CategoryName</option> }
+</select></label>
+<label>Units to purchase <input asp-for="Quantity"></label>
+<label>Purchase cost per unit (JOD) <input asp-for="UnitCost" type="number" step="0.01" min="0.01"></label>
+<label>Expected selling price per unit (JOD) <input asp-for="SellingPrice" type="number" step="0.01" min="0.01"></label>
+<button>Save analysis</button></form>

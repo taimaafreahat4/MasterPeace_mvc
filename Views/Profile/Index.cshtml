@@ -1,0 +1,16 @@
+@model ProfileForm
+@{ ViewData["Title"] = "Account"; }
+<h1>Your account</h1>
+@if (ViewBag.HasPhoto == true) { <img src="/Account/Photo" alt="Your profile photo" width="64" height="64" style="object-fit:cover;border-radius:50%"> }
+<form class="panel form" asp-action="Index" method="post">
+<div asp-validation-summary="All"></div><p class="muted">@ViewBag.Email</p>
+<label>Full name <input asp-for="FullName"></label><label>Phone <input asp-for="Phone" type="tel"></label>
+@if (User.IsInRole("seller"))
+{
+<label>Store name <input asp-for="StoreName"></label><label>City <input asp-for="City"></label><label>Store description <textarea asp-for="Description"></textarea></label>
+}
+<h2>Preferences</h2><label><input asp-for="OrderNotifications"> Order updates</label>
+<label><input asp-for="ShippingNotifications"> Shipping updates</label>
+<label><input asp-for="MarketingNotifications"> Marketing</label>
+<button>Save changes</button>
+</form>

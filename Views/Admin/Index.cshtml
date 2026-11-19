@@ -1,0 +1,4 @@
+@{ ViewData["Title"] = "Administration"; }
+<h1>Administration</h1><partial name="_Nav" />
+<div class="grid">@foreach (var count in (Dictionary<string, int>)ViewBag.Counts)
+{ <article class="panel stat"><strong>@count.Value</strong>@count.Key</article> }</div>

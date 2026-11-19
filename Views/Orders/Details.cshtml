@@ -1,0 +1,56 @@
+@model Order
+@{ ViewData["Title"] = "Order details"; }
+<div class="page-head"><a asp-action="Index">Orders</a><h1>Order details</h1><p>@Model.OrderNumber · <span class="pill">@Model.OrderStatus</span></p></div>
+<div class="grid">
+<section class="panel"><h2>Delivery</h2><p>@Model.ShippingName<br>@Model.ShippingAddress<br>@Model.ShippingCity, @Model.ShippingCountry<br>@Model.ShippingPhone</p></section>
+<section class="panel"><h2>Payment</h2><p class="price">@Model.GrandTotal.ToString("N2") JOD</p>
+@foreach (var payment in Model.Payments)
+{
+<p>@payment.PaymentMethod.Replace('_', ' ') · @payment.PaymentStatus</p>
+@if (User.IsInRole("admin") && Model.OrderStatus == "delivered" && payment.PaymentMethod == "cash_on_delivery" && payment.PaymentStatus == "pending")
+{
+<form asp-controller="Admin" asp-action="ConfirmCash" asp-route-id="@payment.PaymentId" method="post"><button>Confirm cash received</button></form>
+}
+}
+</section>
+</div>
+<h2>Items</h2>
+<div class="table-wrap"><table><thead><tr><th>Product</th><th>Quantity</th><th>Total</th>@if (User.IsInRole("buyer") && Model.OrderStatus == "delivered") { <th>Review</th> }</tr></thead><tbody>
+@foreach (var item in Model.OrderItems)
+{
+<tr><td>@item.ProductNameSnapshot</td><td>@item.Quantity @(item.UnitsPerLot is int units ? $"lot(s) of {units}" : "units")</td><td>@item.LineTotal.ToString("N2") JOD</td>
+@if (User.IsInRole("buyer") && Model.OrderStatus == "delivered")
+{
+<td>
+@if (item.Review is not null) { <span class="pill">@item.Review.ApprovalStatus</span> }
+else
+{
+<form class="inline" asp-action="Review" asp-route-id="@item.OrderItemId" method="post">
+<select name="rating" aria-label="Rating">@for (var n = 5; n >= 1; n--) { <option value="@n">@n / 5</option> }</select>
+<input name="comment" aria-label="Comment" placeholder="Comment" maxlength="2000"><button>Submit</button>
+</form>
+}
+</td>
+}
+</tr>
+}
+</tbody></table></div>
+<h2>Shipment tracking</h2>
+@if (Model.Shipments.Count == 0) { <p class="panel empty">Shipment information is pending.</p> }
+@foreach (var shipment in Model.Shipments)
+{
+<section class="panel"><h3>Shipment #@shipment.ShipmentId <span class="pill">@shipment.ShipmentStatus</span></h3>
+@if (shipment.TrackingNumber is not null) { <p>Tracking @shipment.TrackingNumber</p> }
+@foreach (var entry in shipment.ShipmentEvents.OrderByDescending(e => e.OccurredAt))
+{
+<p><small>@entry.OccurredAt.ToString("yyyy-MM-dd HH:mm") UTC</small> · @entry.Status · @entry.EventDescription</p>
+}
+@if (User.IsInRole("admin") && shipment.ShipmentStatus is "processing" or "shipped")
+{
+<form class="inline" asp-controller="Admin" asp-action="Ship" asp-route-id="@shipment.ShipmentId" method="post">
+@if (shipment.ShipmentStatus == "processing") { <input name="tracking" aria-label="Tracking number" placeholder="Tracking number" maxlength="100"> }
+<button>@(shipment.ShipmentStatus == "processing" ? "Mark shipped" : "Mark delivered")</button>
+</form>
+}
+</section>
+}

@@ -1,0 +1,14 @@
+@model Product
+@{
+    var image = Model.ProductImages.FirstOrDefault(i => i.IsPrimary)?.ImageUrl;
+}
+@if (image is not null && StockMind.Controllers.SellerController.SafeImage(image) && !image.StartsWith("https://example.com/", StringComparison.OrdinalIgnoreCase))
+{
+    <img class="photo" src="@image" alt="@Model.ProductName" loading="lazy" referrerpolicy="no-referrer" />
+}
+else
+{
+    <div class="photo" role="img" aria-label="Product illustration">
+        <svg viewBox="0 0 120 105" fill="none" aria-hidden="true"><path d="m60 9 42 23v43L60 98 18 75V32L60 9Z" fill="#d2e2ca" stroke="#3d6651" stroke-width="2"/><path d="m18 32 42 24 42-24M60 56v42M39 21l42 23v19" stroke="#3d6651" stroke-width="2"/></svg>
+    </div>
+}

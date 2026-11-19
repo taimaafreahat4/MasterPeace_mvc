@@ -1,0 +1,10 @@
+@model IEnumerable<OrderItem>
+@{ ViewData["Title"] = "Sales"; }
+<h1>Sales</h1><partial name="_Nav" />
+@if (!Model.Any()) { <p class="panel empty">No marketplace sales yet.</p> }
+else
+{
+<div class="table-wrap"><table><thead><tr><th>Order</th><th>Product</th><th>Quantity</th><th>Total</th><th>Status</th></tr></thead><tbody>
+@foreach (var item in Model) { <tr><td>@item.Order.OrderNumber</td><td>@item.ProductNameSnapshot</td><td>@item.Quantity</td><td>@item.LineTotal.ToString("N2") JOD</td><td><span class="pill">@item.Order.OrderStatus</span></td></tr> }
+</tbody></table></div>
+}

@@ -1,0 +1,14 @@
+@model IEnumerable<Product>
+@{ ViewData["Title"] = "Product moderation"; }
+<h1>Product moderation</h1><partial name="_Nav" />
+<div class="table-wrap"><table><thead><tr><th>Product</th><th>Seller</th><th>Status</th><th>Moderation</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+<tr><td><strong>@item.ProductName</strong><br><small>@item.Category.CategoryName</small></td>
+<td>@item.Seller.StoreName<br><small>@item.Seller.VerificationStatus</small></td>
+<td><span class="pill">@item.ApprovalStatus</span>@if (item.RejectionReason is not null) { <p>@item.RejectionReason</p> }</td>
+<td><form class="inline" asp-action="Moderate" asp-route-id="@item.ProductId" method="post">
+<input name="reason" aria-label="Rejection reason" placeholder="Reason for rejection" maxlength="1000">
+<button name="approve" value="true">Approve</button><button class="danger" name="approve" value="false">Reject</button></form></td></tr>
+}
+</tbody></table></div>

@@ -1,0 +1,14 @@
+@model IEnumerable<Product>
+@{ ViewData["Title"] = "Stock insights"; }
+<h1>Stock insights</h1><partial name="_Nav" />
+<p>Generate a recommendation from current stock, reorder levels and the last 28 days of delivered sales.</p>
+@foreach (var product in Model.Where(p => p.Inventory is not null && p.Status != "archived"))
+{
+<form class="panel row between" asp-action="Analyze" asp-route-id="@product.ProductId" method="post"><strong>@product.ProductName</strong><button>Analyze stock</button></form>
+}
+<h2>Saved recommendations</h2>
+@foreach (var entry in (IEnumerable<RecommendationAnalysis>)ViewBag.Recommendations)
+{ <article class="panel"><h3>@entry.ProductName</h3><p>@entry.SuggestedAction</p><small>@entry.QuantityOnHand on hand · @entry.SalesPerWeek sales per week · @entry.CreatedAt.ToString("yyyy-MM-dd")</small></article> }
+<div class="row between"><h2>Purchase analyses</h2><a class="button" asp-controller="Purchase" asp-action="Index">Analyze purchase</a></div>
+@foreach (var entry in (IEnumerable<AdvisorAnalysis>)ViewBag.Advice)
+{ <article class="panel"><h3>@entry.ProductName</h3><p>@entry.Recommendation</p><small>@entry.CreatedAt.ToString("yyyy-MM-dd")</small></article> }

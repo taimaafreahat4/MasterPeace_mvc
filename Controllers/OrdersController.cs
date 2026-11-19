@@ -20,6 +20,39 @@ public sealed class OrdersController(StockMindDb db) : StockController
         return order is null ? NotFound() : View(order);
     }
 
+    [Authorize(Roles = "buyer")]
+    public async Task<IActionResult> Confirmation(long id)
+    {
+        var order = await Orders.AsNoTracking().Include(o => o.OrderItems).SingleOrDefaultAsync(o => o.OrderId == id);
+        return order is null ? NotFound() : View(order);
+    }
+
+    public async Task<IActionResult> Track(long id)
+    {
+        var order = await Orders.AsNoTracking().Include(o => o.Shipments).ThenInclude(s => s.ShipmentEvents)
+            .SingleOrDefaultAsync(o => o.OrderId == id);
+        return order is null ? NotFound() : View(order);
+    }
+
+    [HttpGet("/checkout/tracking/tracking.html")]
+    [HttpGet("/checkout/confirmation/confirmation.html")]
+    [HttpGet("/checkout/feedback/feedback.html")]
+    public async Task<IActionResult> LegacyOrder(string? order)
+    {
+        if (string.IsNullOrWhiteSpace(order)) return RedirectToAction(nameof(Index));
+        var numeric = long.TryParse(order, out var id);
+        var match = await Orders.AsNoTracking()
+            .Where(o => o.OrderNumber == order || (numeric && o.OrderId == id))
+            .Select(o => (long?)o.OrderId).FirstOrDefaultAsync();
+        if (match is null) return NotFound();
+
+        var path = Request.Path.Value ?? "";
+        var action = path.Contains("/tracking/", StringComparison.OrdinalIgnoreCase) ? nameof(Track)
+            : path.Contains("/confirmation/", StringComparison.OrdinalIgnoreCase) && User.IsInRole("buyer") ? nameof(Confirmation)
+            : nameof(Details);
+        return RedirectToAction(action, new { id = match.Value });
+    }
+
     [Authorize(Roles = "buyer"), HttpPost]
     public async Task<IActionResult> Review(long id, byte rating, string? comment)
     {
@@ -38,4 +71,6 @@ public sealed class OrdersController(StockMindDb db) : StockController
         return RedirectToAction(nameof(Details), new { id = item.OrderId });
     }
 }
+
+
 

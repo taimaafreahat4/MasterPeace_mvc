@@ -2,8 +2,8 @@
 @{ if (User.IsInRole("admin")) Layout = "_AdminWorkspace"; ViewData["Title"] = "Order details"; }
 <div class="page-head"><a asp-action="Index">Orders</a><h1>Order details</h1><p>@Model.OrderNumber · <span class="pill">@Model.OrderStatus</span></p></div>
 <div class="grid">
-<section class="panel"><h2>Delivery</h2><p>@Model.ShippingName<br>@Model.ShippingAddress<br>@Model.ShippingCity, @Model.ShippingCountry<br>@Model.ShippingPhone</p></section>
-<section class="panel"><h2>Payment</h2><p class="price">@Model.GrandTotal.ToString("N2") JOD</p>
+<section class="panel"><h2>Delivery</h2><p>@Model.ShippingName<br>@Model.ShippingAddress<br>@Model.ShippingCity, @Model.ShippingCountry<br>@Model.ShippingPhone</p>@if (!string.IsNullOrWhiteSpace(Model.DeliveryNotes)) { <p>@Model.DeliveryNotes</p> }</section>
+<section class="panel"><h2>Payment</h2><p>Subtotal @Model.Subtotal.ToString("N2") JOD · Service fee @Model.ServiceFee.ToString("N2") JOD</p><p class="price">@Model.GrandTotal.ToString("N2") JOD</p>
 @foreach (var payment in Model.Payments)
 {
 <p>@payment.PaymentMethod.Replace('_', ' ') · @payment.PaymentStatus</p>
@@ -35,7 +35,7 @@ else
 </tr>
 }
 </tbody></table></div>
-<h2>Shipment tracking</h2>
+<div class="row between"><h2>Shipment tracking</h2><a class="button quiet" asp-action="Track" asp-route-id="@Model.OrderId">Track order</a></div>
 @if (Model.Shipments.Count == 0) { <p class="panel empty">Shipment information is pending.</p> }
 @foreach (var shipment in Model.Shipments)
 {
@@ -54,3 +54,5 @@ else
 }
 </section>
 }
+
+

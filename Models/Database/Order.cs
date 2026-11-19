@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace StockMind.Models.Database;
@@ -22,6 +22,8 @@ public partial class Order
     public string ShippingCity { get; set; } = null!;
 
     public string ShippingAddress { get; set; } = null!;
+
+    public string? DeliveryNotes { get; set; }
 
     public decimal Subtotal { get; set; }
 
@@ -47,3 +49,4 @@ public partial class Order
 
     public virtual ICollection<SiteFeedback> SiteFeedbacks { get; set; } = new List<SiteFeedback>();
 }
+

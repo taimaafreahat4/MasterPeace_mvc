@@ -1,0 +1,37 @@
+@model StockMind.ViewComponents.StockAccountMenu
+@if (Model is null)
+{
+    <a class="stock-icon" asp-controller="Cart" asp-action="Index" aria-label="Shopping cart"><i class="fa-solid fa-cart-shopping"></i></a>
+    <a class="stock-icon stock-heart" asp-controller="Market" asp-action="Favorites" aria-label="Favorites"><i class="fa-solid fa-heart"></i></a>
+    <a class="stock-auth" asp-controller="Account" asp-action="Login">Login</a>
+    <a class="stock-auth stock-signup" asp-controller="Account" asp-action="Register">Sign Up</a>
+}
+else
+{
+    <a class="stock-icon" asp-controller="Profile" asp-action="Notifications" aria-label="Notifications (@Model.Unread unread)">
+        <i class="fa-regular fa-bell"></i>@if (Model.Unread > 0) { <span class="stock-counter">@Model.Unread</span> }
+    </a>
+    @if (User.IsInRole("buyer"))
+    {
+        <a class="stock-icon" asp-controller="Cart" asp-action="Index" aria-label="Shopping cart (@Model.Cart items)">
+            <i class="fa-solid fa-cart-shopping"></i><span class="stock-counter">@Model.Cart</span>
+        </a>
+        <a class="stock-icon stock-heart" asp-controller="Market" asp-action="Favorites" aria-label="Favorites"><i class="fa-solid fa-heart"></i></a>
+    }
+    <details class="stock-account-menu">
+        <summary><img src="@(Model.HasPhoto ? "/Account/Photo" : "/components/logo.png")" alt=""> <span>@Model.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()</span></summary>
+        <div class="stock-account-panel">
+            <header><strong>@Model.Name</strong><small>@Model.Email</small></header>
+            @if (User.IsInRole("buyer")) { <a asp-controller="Buyer" asp-action="Index"><i class="fa-solid fa-table-cells"></i> My Dashboard</a> }
+            @if (User.IsInRole("seller"))
+            {
+                <a asp-controller="Seller" asp-action="Index"><i class="fa-solid fa-table-cells"></i> Seller Dashboard</a>
+                <a asp-controller="Seller" asp-action="StoreProfile"><i class="fa-solid fa-store"></i> Store Profile</a>
+            }
+            @if (User.IsInRole("admin")) { <a asp-controller="Admin" asp-action="Index"><i class="fa-solid fa-table-cells"></i> Administration</a> }
+            <a asp-controller="Profile" asp-action="Edit"><i class="fa-solid fa-pencil"></i> Edit Profile</a>
+            <a asp-controller="Profile" asp-action="Index"><i class="fa-solid fa-gear"></i> Settings</a>
+            <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</button></form>
+        </div>
+    </details>
+}

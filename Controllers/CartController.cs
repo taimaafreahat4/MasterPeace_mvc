@@ -11,7 +11,9 @@ namespace StockMind.Controllers;
 public sealed class CartController(StockMindDb db) : StockController
 {
     private IQueryable<CartItem> Items => db.CartItems.Where(i => i.Cart.UserId == UserId)
-        .Include(i => i.Listing.Product.Inventory);
+        .Include(i => i.Listing.Product.Inventory)
+        .Include(i => i.Listing.Product.Category).Include(i => i.Listing.Product.Seller)
+        .Include(i => i.Listing.Product.ProductImages.Where(image => image.IsPrimary));
 
     public async Task<IActionResult> Index() => View(await Items.ToListAsync());
 
@@ -56,7 +58,8 @@ public sealed class CartController(StockMindDb db) : StockController
         if (items.Count == 0) return RedirectToAction(nameof(Index));
         await ShowCheckoutSummary(items);
         var address = await db.Addresses.FirstOrDefaultAsync(a => a.UserId == UserId && a.IsDefault);
-        return View(address is null ? new ShippingForm() : new ShippingForm
+        var member = await db.Users.Where(u => u.UserId == UserId).Select(u => new { u.FullName, u.Phone }).SingleAsync();
+        return View(address is null ? new ShippingForm { Name = member.FullName, Phone = member.Phone ?? "" } : new ShippingForm
         {
             Name = address.RecipientName, Phone = address.Phone ?? "", Country = address.Country,
             City = address.City, Address = address.StreetAddress
@@ -87,7 +90,7 @@ public sealed class CartController(StockMindDb db) : StockController
         {
             BuyerId = UserId, OrderNumber = "SM-" + Guid.NewGuid().ToString("N"),
             ShippingName = form.Name, ShippingPhone = form.Phone, ShippingCountry = form.Country,
-            ShippingCity = form.City, ShippingAddress = form.Address, OrderStatus = "processing"
+            ShippingCity = form.City, ShippingAddress = form.Address, DeliveryNotes = form.DeliveryNotes?.Trim(), OrderStatus = "processing"
         };
 
         foreach (var item in items)
@@ -115,9 +118,11 @@ public sealed class CartController(StockMindDb db) : StockController
                 QuantityChange = -units, MovementType = "sale", Reason = "Marketplace checkout" });
         }
 
-        if (order.Subtotal > 9_999_999_999.99m)
+        order.ServiceFee = Commerce.ServiceFee(order.Subtotal);
+        order.GrandTotal = order.Subtotal + order.ServiceFee;
+        if (order.GrandTotal > 9_999_999_999.99m)
             return Notice("order-total-limit", "Cart");
-        order.GrandTotal = order.Subtotal;
+
         order.Payments.Add(new Payment { UserId = UserId, Amount = order.GrandTotal,
             Currency = "JOD", PaymentMethod = "cash_on_delivery", PaymentStatus = "pending" });
         foreach (var seller in order.OrderItems.Select(i => i.SellerId).Distinct())
@@ -130,9 +135,11 @@ public sealed class CartController(StockMindDb db) : StockController
         db.CartItems.RemoveRange(items);
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return RedirectToAction("Details", "Orders", new { id = order.OrderId });
+        return RedirectToAction("Confirmation", "Orders", new { id = order.OrderId });
     }
 }
+
+
 
 
 

@@ -1,0 +1,36 @@
+@model Order
+@{ Layout = null; }
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock Mind | Order confirmed</title>
+<link rel="stylesheet" href="/checkout/confirmation/confirmation.css">
+<link rel="stylesheet" href="/checkout/confirmation/confirmation-polish.css">
+<link rel="stylesheet" href="/css/stock-brand.css"><link rel="stylesheet" href="/components/footer.css"><link rel="stylesheet" href="/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+<partial name="_StockNavigation" />
+<main class="confirmation-page">
+    <section class="confirmation-card">
+        <div class="success-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M16 33 L27 44 L49 20"></path></svg></div>
+        <p class="success-eyebrow">ORDER CONFIRMED</p>
+        <h1>Order placed <span>successfully.</span></h1>
+        <p class="thank-you">Your order is being prepared. Check your notifications for delivery updates.</p>
+        <p class="demo-note">Payment is due on delivery.</p>
+        <div class="order-info">
+            <div><small>Order number</small><strong id="orderNumber">@Model.OrderNumber</strong></div>
+            <div><small>Order total</small><strong id="orderTotal">JOD @Model.GrandTotal.ToString("N2")</strong></div>
+            <div><small>Current status</small><strong id="orderStatus">@Model.OrderStatus</strong></div>
+        </div>
+        <div class="items-box"><h3>Order items</h3><div id="orderItems">
+        @foreach (var item in Model.OrderItems)
+        { <p>@item.ProductNameSnapshot × @item.Quantity · JOD @item.LineTotal.ToString("N2")</p> }
+        </div></div>
+        <div class="buttons"><a asp-action="Track" asp-route-id="@Model.OrderId" class="primary-button">Track this order <span aria-hidden="true">→</span></a><a asp-controller="Market" asp-action="Index">Continue shopping</a></div>
+    </section>
+</main>
+<partial name="_StockFooter" />
+</body>
+</html>

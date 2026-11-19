@@ -45,7 +45,7 @@
                 <div class="panel-heading">
                     <div>
                         <h2>Your items</h2>
-                        <p id="productCount">@Model.Count products</p>
+                        <p id="productCount">@Model.Count products · @Model.Sum(item => (long)item.Quantity * Commerce.UnitsPerPurchase(item.Listing)) units</p>
                     </div>
 
                     <span class="wholesale-badge">
@@ -58,18 +58,26 @@
     {
         var listing = item.Listing;
         <article class="cart-item">
+            <div class="cart-item-image"><partial name="_Photo" model="listing.Product" /></div>
             <div class="cart-item-info">
                 <h3 class="cart-item-name">@listing.Product.ProductName</h3>
-                <p>@Commerce.Price(listing).ToString("N2") JOD @(listing.SellingMethod == "whole_lot" ? "per lot" : "per unit")</p>
+                <p class="cart-item-seller">@listing.Product.Seller.StoreName</p>
+                <span class="cart-item-category">@listing.Product.Category.CategoryName</span>
+                <p>Minimum order: @Commerce.Minimum(listing) @(listing.SellingMethod == "whole_lot" ? "lot" : "units")</p>
+                <span class="wholesale-badge">Platform Commission: @Commerce.FeePercent%</span>
             </div>
-            <form class="quantity-control" asp-action="Set" asp-route-id="@listing.ListingId" method="post">
-                <input aria-label="Quantity" type="number" name="quantity" min="@Commerce.Minimum(listing)" value="@item.Quantity" required>
-                <button class="quantity-button" type="submit" aria-label="Update quantity">✓</button>
-            </form>
-            <strong>@((Commerce.Price(listing) * item.Quantity).ToString("N2")) JOD</strong>
-            <form asp-action="Set" asp-route-id="@listing.ListingId" method="post">
-                <button class="remove-button" name="quantity" value="0" aria-label="Remove item">×</button>
-            </form>
+            <div class="cart-item-right">
+                <p>@(listing.SellingMethod == "whole_lot" ? "Lot price" : "Unit price") <strong>JOD @Commerce.Price(listing).ToString("N2")</strong></p>
+                <form class="cart-quantity @(listing.SellingMethod == "whole_lot" ? "is-whole-lot" : "")" asp-action="Set" asp-route-id="@listing.ListingId" method="post">
+                    <button class="quantity-button" name="quantity" value="@(item.Quantity - 1)" disabled="@(item.Quantity <= Commerce.Minimum(listing))" aria-label="Decrease quantity">−</button>
+                    <span class="quantity-value">@item.Quantity</span>
+                    <button class="quantity-button" name="quantity" value="@(item.Quantity + 1)" disabled="@(!Commerce.InStock(listing, item.Quantity + 1))" aria-label="Increase quantity">+</button>
+                </form>
+                <div class="item-actions">
+                    <strong>JOD @((Commerce.Price(listing) * item.Quantity).ToString("N2"))</strong>
+                    <form asp-action="Set" asp-route-id="@listing.ListingId" method="post"><button class="remove-button" name="quantity" value="0">Remove</button></form>
+                </div>
+            </div>
         </article>
     }
 </div>
@@ -113,12 +121,10 @@
 <div class="summary-line commission-line">
 
     <span>
-        Service fee
+        Stock Mind Commission (@Commerce.FeePercent%)
     </span>
 
-    <strong id="commission">
-        JOD 0.00
-    </strong>
+    <strong id="commission">JOD @Commerce.ServiceFee(subtotal).ToString("N2")</strong>
 
 </div>
 
@@ -132,7 +138,7 @@
 
                 <div class="total-line">
     <span>Estimated total</span>
-    <strong id="total">JOD @subtotal.ToString("N2")</strong>
+    <strong id="total">JOD @((subtotal + Commerce.ServiceFee(subtotal)).ToString("N2"))</strong>
 </div>
 
                 <p class="summary-note">
@@ -159,4 +165,6 @@
     <partial name="_StockFooter" />
 </body>
 </html>
+
+
 

@@ -360,6 +360,7 @@ public partial class StockMindDb : DbContext
                 .HasDefaultValue("pending");
             entity.Property(e => e.ServiceFee).HasColumnType("decimal(12, 2)");
             entity.Property(e => e.ShippingAddress).HasMaxLength(500);
+            entity.Property(e => e.DeliveryNotes).HasMaxLength(300);
             entity.Property(e => e.ShippingCity).HasMaxLength(100);
             entity.Property(e => e.ShippingCountry).HasMaxLength(100);
             entity.Property(e => e.ShippingFee).HasColumnType("decimal(12, 2)");
@@ -852,4 +853,5 @@ public partial class StockMindDb : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+
 

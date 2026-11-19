@@ -1,0 +1,50 @@
+@model Order
+@{
+    Layout = null;
+    var steps = new[] { "Ordered", "Processing", "Shipped", "Delivered" };
+    var active = Model.OrderStatus switch { "processing" => 1, "shipped" => 2, "delivered" => 3, _ => 0 };
+}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock Mind | Track Order</title>
+<link rel="stylesheet" href="/checkout/tracking/tracking.css"><link rel="stylesheet" href="/checkout/tracking/tracking-polish.css">
+<link rel="stylesheet" href="/css/stock-brand.css"><link rel="stylesheet" href="/components/footer.css"><link rel="stylesheet" href="/responsive.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+<partial name="_StockNavigation" />
+<main class="tracking-page">
+    <a asp-action="Index" class="back-to-cart">← Back to orders</a>
+    <section class="tracking-header"><span>ORDER TRACKING</span><h1>Track Your Order</h1><p>Stay updated with your delivery status.</p></section>
+    <section class="tracking-container">
+        <div class="status-header"><h2>Order Status</h2><div id="statusBadge" role="status">@Model.OrderStatus</div></div>
+        @if (Model.OrderStatus != "cancelled")
+        {
+            <div class="timeline">
+                @for (var i = 0; i < steps.Length; i++)
+                {
+                    if (i > 0) { <div class="line @(i <= active ? "completed-line" : "")"></div> }
+                    <div class="timeline-step @(i < active ? "completed" : i == active ? "active" : "")">
+                        <div class="circle">@(i <= active ? "✓" : (i + 1).ToString())</div><p>@steps[i]</p>
+                    </div>
+                }
+            </div>
+        }
+        <p><strong>Order number</strong> @Model.OrderNumber · @Model.CreatedAt.ToString("yyyy-MM-dd")</p>
+        @foreach (var shipment in Model.Shipments)
+        {
+            <article class="action-card">
+                <h3>Shipment #@shipment.ShipmentId · @shipment.ShipmentStatus</h3>
+                @if (!string.IsNullOrWhiteSpace(shipment.TrackingNumber)) { <p>Tracking number @shipment.TrackingNumber</p> }
+                @foreach (var entry in shipment.ShipmentEvents.OrderByDescending(e => e.OccurredAt))
+                { <p><time>@entry.OccurredAt.ToString("yyyy-MM-dd HH:mm") UTC</time> · @entry.EventDescription</p> }
+            </article>
+        }
+        <a asp-action="Details" asp-route-id="@Model.OrderId" class="tracking-primary-button">@(Model.OrderStatus == "delivered" ? "Order details and feedback" : "View order details")</a>
+    </section>
+</main>
+<partial name="_StockFooter" />
+</body>
+</html>

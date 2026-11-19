@@ -151,6 +151,7 @@
                 <h3 id="loginType">Login as Buyer</h3>
 
                 <form id="loginForm" asp-action="Login" method="post">
+<input type="hidden" asp-for="RequestedRole">
 <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl">
 
                     <div class="field">
@@ -210,3 +211,4 @@
 <script defer src="~/login/login-mvc.js" asp-append-version="true"></script>
 </body>
 </html>
+

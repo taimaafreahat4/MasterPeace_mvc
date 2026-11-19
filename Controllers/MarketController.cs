@@ -7,17 +7,31 @@ namespace StockMind.Controllers;
 
 public sealed class MarketController(StockMindDb db) : StockController
 {
-    public async Task<IActionResult> Index(string? q, int? category, string? categoryName)
+    public async Task<IActionResult> Index(string? q, int? category, string? categoryName, string sort = "recommended", bool trends = false)
     {
-        ViewBag.CategoryName = categoryName;
-        ViewBag.Categories = await db.Categories.Where(c => c.IsActive).OrderBy(c => c.CategoryName).ToListAsync();
+        ViewBag.CategoryName = category.HasValue
+            ? await db.Categories.Where(c => c.CategoryId == category).Select(c => c.CategoryName).SingleOrDefaultAsync()
+            : categoryName;
         ViewBag.Query = q;
-        ViewBag.Category = category;
+        ViewBag.Sort = sort;
+        ViewBag.Trends = trends;
+        ViewBag.Favorites = User.IsInRole("buyer")
+            ? (await db.Favorites.Where(f => f.UserId == UserId).Select(f => f.ListingId).ToListAsync()).ToHashSet()
+            : new HashSet<long>();
         var listings = Commerce.Available(db);
-        if (!string.IsNullOrWhiteSpace(q)) listings = listings.Where(l => l.Product.ProductName.Contains(q.Trim()));
+        if (!string.IsNullOrWhiteSpace(q))
+            listings = listings.Where(l => l.Product.ProductName.Contains(q.Trim()) || l.Product.Seller.StoreName.Contains(q.Trim()));
         if (category.HasValue) listings = listings.Where(l => l.Product.CategoryId == category);
         else if (!string.IsNullOrWhiteSpace(categoryName)) listings = listings.Where(l => l.Product.Category.CategoryName == categoryName);
-        return View(await listings.OrderBy(l => l.Product.ProductName).Take(120).ToListAsync());
+
+        var sorted = trends ? listings.OrderByDescending(l => l.OrderItems.Where(i => i.Order.OrderStatus != "cancelled").Sum(i => (long?)i.Quantity) ?? 0) : sort switch
+        {
+            "price-low" => listings.OrderBy(l => l.SellingMethod == "whole_lot" ? l.LotPrice : l.UnitPrice),
+            "price-high" => listings.OrderByDescending(l => l.SellingMethod == "whole_lot" ? l.LotPrice : l.UnitPrice),
+            "name" => listings.OrderBy(l => l.Product.ProductName),
+            _ => listings.OrderByDescending(l => l.PublishedAt)
+        };
+        return View(await sorted.ThenBy(l => l.ListingId).Take(120).ToListAsync());
     }
 
     public async Task<IActionResult> Details(long id)
@@ -35,7 +49,7 @@ public sealed class MarketController(StockMindDb db) : StockController
         .Where(l => l.Favorites.Any(f => f.UserId == UserId)).ToListAsync());
 
     [Authorize(Roles = "buyer"), HttpPost]
-    public async Task<IActionResult> Favorite(long id, bool remove)
+    public async Task<IActionResult> Favorite(long id, bool remove, string? returnUrl)
     {
         await using var transaction = await Commerce.Lock(db);
         var item = await db.Favorites.SingleOrDefaultAsync(f => f.UserId == UserId && f.ListingId == id);
@@ -44,7 +58,8 @@ public sealed class MarketController(StockMindDb db) : StockController
             db.Favorites.Add(new() { UserId = UserId, ListingId = id });
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
-        return RedirectToAction(nameof(Favorites));
+        return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl) : RedirectToAction(nameof(Favorites));
     }
 }
+
 

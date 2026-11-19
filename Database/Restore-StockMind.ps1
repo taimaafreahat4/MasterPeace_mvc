@@ -23,3 +23,5 @@ if ($LASTEXITCODE -ne 0) { throw 'Catalog preparation failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Registration profile setup failed.' }
 & sqlcmd -S $Server -E -C -b -d StockMindMVC -i (Join-Path $PSScriptRoot '03-demo-testimonials.sql')
 if ($LASTEXITCODE -ne 0) { throw 'Demo testimonial setup failed.' }
+& sqlcmd -S $Server -E -C -b -d StockMindMVC -i (Join-Path $PSScriptRoot '04-order-delivery-notes.sql')
+if ($LASTEXITCODE -ne 0) { throw 'Delivery notes setup failed.' }

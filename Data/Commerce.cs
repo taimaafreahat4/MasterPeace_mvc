@@ -19,6 +19,9 @@ internal static class Commerce
     public static decimal Price(Listing listing) => listing.SellingMethod == "whole_lot"
         ? listing.LotPrice!.Value : listing.UnitPrice!.Value;
 
+    public const int FeePercent = 5;
+    public static decimal ServiceFee(decimal subtotal) => Math.Round(subtotal * FeePercent / 100m, 2, MidpointRounding.AwayFromZero);
+
     public static int Minimum(Listing listing) => listing.SellingMethod == "whole_lot" ? 1 : listing.MinOrderQuantity;
 
     public static int UnitsPerPurchase(Listing listing) => listing.SellingMethod == "whole_lot" ? listing.LotUnits!.Value : 1;
@@ -47,4 +50,5 @@ internal static class Commerce
         }
     }
 }
+
 

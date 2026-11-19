@@ -47,11 +47,12 @@ function setRole(newRole, animate = true) {
 
 }
 
-buyer.addEventListener("click",  () => setRole("Buyer"));
-seller.addEventListener("click", () => setRole("Seller"));
+const selectedRole = document.getElementById("RequestedRole");
+buyer.addEventListener("click", () => { selectedRole.value = "buyer"; setRole("Buyer"); });
+seller.addEventListener("click", () => { selectedRole.value = "seller"; setRole("Seller"); });
 
 
-setRole(new URLSearchParams(location.search).get("role") === "seller" ? "Seller" : "Buyer", false);
+setRole(selectedRole.value === "seller" ? "Seller" : "Buyer", false);
 window.lucide?.createIcons();
 const visibility = document.getElementById("showPassword");
 visibility.addEventListener("click", () => {
@@ -421,3 +422,4 @@ document.getElementById("replayBtn").addEventListener("click", () => location.re
 
 if (body.classList.contains("done")) finish(true);
 else runIntro();
+

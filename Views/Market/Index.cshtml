@@ -1,13 +1,180 @@
-@model IEnumerable<Listing>
-@{ ViewData["Title"] = "Marketplace"; }
-<div class="page-head"><h1>Marketplace</h1><p class="muted">Browse inventory by category, product or store.</p></div>
-<form class="panel inline" asp-action="Index" method="get">
-<input aria-label="Search products" name="q" placeholder="Search products" value="@ViewBag.Query">
-<select name="category" aria-label="Category">
-<option value="">All categories</option>
-@foreach (var category in (IEnumerable<Category>)ViewBag.Categories)
-{
-    <option value="@category.CategoryId" selected="@(ViewBag.Category == category.CategoryId)">@category.CategoryName</option>
+@model IReadOnlyList<Listing>
+@{
+    Layout = null;
+    var selected = (string?)ViewBag.CategoryName;
+    var favorites = (HashSet<long>)ViewBag.Favorites;
+    var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
 }
-</select><button>Search</button></form>
-<partial name="_Cards" model="Model" />
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Stock Mind - Categories</title>
+
+    <link rel="stylesheet" href="/category/category.css">
+
+    <link rel="stylesheet" href="/css/stock-brand.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link rel="stylesheet" href="/components/footer.css">
+
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<partial name="_StockNavigation" />
+
+<!-- ================= MAIN ================= -->
+
+<main class="main-container">
+
+    <!-- ================= CATEGORIES ================= -->
+
+    <section class="categories-section">
+
+        <div class="section-heading">
+
+            <h1>Categories</h1>
+
+            <p>
+
+                Explore products from every category
+
+            </p>
+
+        </div>
+
+        <div class="categories">
+            
+
+            <a class="category-card @(selected == "Clothing" ? "active" : "")" asp-action="Index" asp-route-categoryName="Clothing">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=400&q=85" alt="Clothing">
+                </div>
+                <span>Clothing</span>
+            </a>
+
+            <a class="category-card @(selected == "Beauty & Personal Care" ? "active" : "")" asp-action="Index" asp-route-categoryName="Beauty & Personal Care">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=85" alt="Cosmetics">
+                </div>
+                <span>Cosmetics</span>
+            </a>
+
+            <a class="category-card @(selected == "Electronics" ? "active" : "")" asp-action="Index" asp-route-categoryName="Electronics">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=85" alt="Electronics">
+                </div>
+                <span>Electronics</span>
+            </a>
+
+            <a class="category-card @(selected == "Home & Kitchen" ? "active" : "")" asp-action="Index" asp-route-categoryName="Home & Kitchen">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=400&q=85" alt="Home and Living">
+                </div>
+                <span>Home &amp; Living</span>
+            </a>
+
+            <a class="category-card @(selected == "Office Supplies" ? "active" : "")" asp-action="Index" asp-route-categoryName="Office Supplies">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=85" alt="Books">
+                </div>
+                <span>Books</span>
+            </a>
+
+            <a class="category-card @(selected == "Toys & Baby" ? "active" : "")" asp-action="Index" asp-route-categoryName="Toys & Baby">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=400&q=85" alt="Toys and baby products">
+                </div>
+                <span>Toys &amp; Baby</span>
+            </a>
+
+            <a class="category-card @(selected == "Sports" ? "active" : "")" asp-action="Index" asp-route-categoryName="Sports">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=400&q=85" alt="Sports">
+                </div>
+                <span>Sports</span>
+            </a>
+
+            <a class="category-card @(selected == "Accessories" ? "active" : "")" asp-action="Index" asp-route-categoryName="Accessories">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=400&q=85" alt="Bags and Accessories">
+                </div>
+                <span>Bags &amp; Accessories</span>
+            </a>
+
+            <a class="category-card @(selected == "Other" ? "active" : "")" asp-action="Index" asp-route-categoryName="Other">
+                <div class="category-image">
+                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=400&q=85" alt="Other products">
+                </div>
+                <span>Other</span>
+            </a>
+
+        </div>
+
+    </section>
+
+
+<section class="products-section">
+    <form class="market-toolbar" method="get" asp-action="Index">
+        <input type="hidden" name="categoryName" value="@selected">
+        <label class="sort-control"><span>Sort By</span>
+            <select name="sort" aria-label="Sort products">
+                @foreach (var option in new[] { ("recommended", "Recommended"), ("price-low", "Price: Low to High"), ("price-high", "Price: High to Low"), ("name", "Name") })
+                { <option value="@option.Item1" selected="@(ViewBag.Sort == option.Item1)">@option.Item2</option> }
+            </select>
+        </label>
+        <button class="trends-button" name="trends" value="true" aria-pressed="@(ViewBag.Trends == true ? "true" : "false")">✦ Trends</button>
+        <input class="market-search-field" name="q" type="search" value="@ViewBag.Query" placeholder="Search products" aria-label="Search products">
+        <button class="trends-button">Apply</button>
+        <a asp-action="Index">All products</a>
+        <span class="results-count">@Model.Count @(Model.Count == 1 ? "product" : "products")</span>
+    </form>
+    @if (Model.Count == 0) { <p class="market-empty">No products in this category yet.</p> }
+    <div class="products-grid">
+    @foreach (var listing in Model)
+    {
+        <article class="product-card">
+            <div class="product-image">
+                <a asp-action="Details" asp-route-id="@listing.ListingId" aria-label="View @listing.Product.ProductName"><partial name="_Photo" model="listing.Product" /></a>
+                @if (ViewBag.Trends == true) { <span class="stock-trend-label">✦ Trends</span> }
+                @if (User.IsInRole("buyer"))
+                {
+                    var saved = favorites.Contains(listing.ListingId);
+                    <form asp-action="Favorite" asp-route-id="@listing.ListingId" method="post">
+                        <input type="hidden" name="returnUrl" value="@returnUrl">
+                        <button class="favorite-button @(saved ? "active" : "")" aria-label="@(saved ? "Remove from favorites" : "Add to favorites")" name="remove" value="@(saved ? "true" : "false")">@(saved ? "♥" : "♡")</button>
+                    </form>
+                    @if (Commerce.InStock(listing, Commerce.Minimum(listing)))
+                    {
+                        <form asp-controller="Cart" asp-action="Set" asp-route-id="@listing.ListingId" method="post">
+                            <input type="hidden" name="quantity" value="@Commerce.Minimum(listing)">
+                            <button class="product-cart-button add-to-cart-text" name="add" value="true">Add to Cart</button>
+                        </form>
+                    }
+                }
+            </div>
+            <div class="product-info">
+                <h2><a asp-action="Details" asp-route-id="@listing.ListingId">@listing.Product.ProductName</a></h2>
+                <p>@listing.Product.Seller.StoreName</p>
+                <strong>JOD @Commerce.Price(listing).ToString("N2")</strong>
+                <p>@(listing.SellingMethod == "whole_lot" ? $"Whole lot · {listing.LotUnits} units" : $"Minimum order: {listing.MinOrderQuantity} units")</p>
+            </div>
+        </article>
+    }
+    </div>
+</section>
+</main>
+<partial name="_StockFooter" />
+</body>
+</html>
+

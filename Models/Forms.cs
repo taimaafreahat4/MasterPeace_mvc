@@ -4,12 +4,14 @@ namespace StockMind.Models;
 
 public sealed class AccountForm
 {
+    [StringLength(10)] public string? RequestedRole { get; set; }
     [Required, EmailAddress, StringLength(255)] public string Email { get; set; } = "";
     [Required, DataType(DataType.Password), StringLength(128)] public string Password { get; set; } = "";
 }
 
 public sealed class ShippingForm
 {
+    [StringLength(300)] public string? DeliveryNotes { get; set; }
     [Required, StringLength(150)] public string Name { get; set; } = "";
     [Required, Phone, StringLength(30)] public string Phone { get; set; } = "";
     [Required, StringLength(100)] public string Country { get; set; } = "Jordan";
@@ -51,5 +53,6 @@ public sealed class FeedbackForm
     [EmailAddress, StringLength(255)] public string? Email { get; set; }
     [StringLength(150)] public string? Name { get; set; }
 }
+
 
 

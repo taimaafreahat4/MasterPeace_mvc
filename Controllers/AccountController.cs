@@ -14,10 +14,10 @@ namespace StockMind.Controllers;
 
 public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hasher) : StockController
 {
-    public IActionResult Login(string? returnUrl)
+    public IActionResult Login(string? returnUrl, string? role)
     {
         ViewBag.ReturnUrl = returnUrl;
-        return View(new AccountForm());
+        return View(new AccountForm { RequestedRole = role is "buyer" or "seller" or "admin" ? role : null });
     }
 
     [HttpPost, EnableRateLimiting("account")]
@@ -32,6 +32,12 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
             || hasher.VerifyHashedPassword(member, member.PasswordHash, form.Password) == PasswordVerificationResult.Failed)
         {
             ModelState.AddModelError("", "The email or password is invalid.");
+            return View(form);
+        }
+
+        if (!string.IsNullOrEmpty(form.RequestedRole) && member.Role.RoleName != form.RequestedRole)
+        {
+            ModelState.AddModelError(nameof(form.RequestedRole), "This account does not have access to the selected role.");
             return View(form);
         }
 
@@ -170,6 +176,7 @@ public sealed class AccountController(StockMindDb db, IPasswordHasher<User> hash
         Console.WriteLine("Account created.");
     }
 }
+
 
 
 

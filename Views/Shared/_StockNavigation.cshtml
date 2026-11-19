@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <header class="stock-nav">
     <nav class="stock-nav-inner" aria-label="Main navigation">
         <a class="stock-logo" asp-controller="Home" asp-action="Index">
@@ -9,28 +10,10 @@
             <a asp-controller="Market" asp-action="Index">Categories</a>
             <a asp-controller="Home" asp-action="Index" asp-fragment="about">About</a>
             <a asp-controller="Home" asp-action="Index" asp-fragment="contact">Contact us</a>
-            @if (User.IsInRole("buyer")) { <a asp-controller="Buyer" asp-action="Index">Dashboard</a> }
-            @if (User.IsInRole("seller")) { <a asp-controller="Seller" asp-action="Index">Seller center</a> }
-            @if (User.IsInRole("admin")) { <a asp-controller="Admin" asp-action="Index">Administration</a> }
         </div>
-        <div class="stock-nav-actions">
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <a class="stock-icon" asp-controller="Profile" asp-action="Notifications" aria-label="Notifications"><i class="fa-regular fa-bell"></i></a>
-            }
-            <a class="stock-icon" asp-controller="Cart" asp-action="Index" aria-label="Shopping cart"><i class="fa-solid fa-cart-shopping"></i></a>
-            <a class="stock-icon stock-heart" asp-controller="Market" asp-action="Favorites" aria-label="Favorites"><i class="fa-solid fa-heart"></i></a>
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <a class="stock-auth" asp-controller="Profile" asp-action="Edit">Account</a>
-                <form asp-controller="Account" asp-action="Logout" method="post"><button class="stock-auth">Sign out</button></form>
-            }
-            else
-            {
-                <a class="stock-auth" asp-controller="Account" asp-action="Login">Login</a>
-                <a class="stock-auth stock-signup" asp-controller="Account" asp-action="Register">Sign Up</a>
-            }
-        </div>
+        <div class="stock-nav-actions">@await Component.InvokeAsync("StockAccount")</div>
     </nav>
 </header>
+
+
 

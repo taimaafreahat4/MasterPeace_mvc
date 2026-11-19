@@ -583,56 +583,7 @@
 
 </section>   <!-- ✅ أضف هاد السطر: نهاية steps-section -->
 
-<section class="testimonials" id="testimonials">
-
-    <div class="testimonial-bg"></div>
-    <div class="testimonial-bg bg2"></div>
-
-    <div class="container">
-
-        <div class="center-heading">
-            <div class="section-label">WHAT OUR USERS SAY</div>
-
-            <h2 class="section-title">
-                What merchants <span>say</span>
-            </h2>
-
-            <p class="section-subtitle">
-                Merchant and customer feedback appears here after review and approval.
-            </p>
-        </div>
-
-        <div class="t-stage" id="tStage">
-
-            <div class="t-arc"><span></span><span></span><span></span></div>
-
-            <!-- الكاردات بتنبني من testimonials.js -->
-            <div class="t-track" id="tTrack">
-    @for (var i = 0; i < Model.Feedback.Count; i++)
-    {
-        var item = Model.Feedback[i];
-        <article class="t-card active stock-feedback" hidden="@(i != 0)">
-            <h3>@(item.DisplayName ?? "StockMind customer")</h3>
-            @if (item.Rating is byte rating) { <div class="t-stars" aria-label="@rating out of 5 stars">@(new string('★', rating))</div> }
-            <p>@item.Message</p>
-        </article>
-    }
-    @if (Model.Feedback.Count == 0) { <article class="t-card stock-feedback"><p>No approved feedback yet.</p></article> }
-</div>
-
-            <button hidden class="t-arrow t-prev" id="tPrev" aria-label="Previous">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <button hidden class="t-arrow t-next" id="tNext" aria-label="Next">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-
-        </div>
-
-        <div class="t-dots" id="tDots"></div>
-
-    </div>
-</section>
+<partial name="_Testimonials" model="Model.Feedback" />
 
     
 <partial name="_StockFooter" />

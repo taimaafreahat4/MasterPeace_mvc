@@ -16,7 +16,13 @@ public sealed class HomeController(StockMindDb db) : StockController
         var categories = (await db.Categories.Where(c => c.IsActive).ToListAsync())
             .ToDictionary(c => c.CategoryName, c => new CategorySummary(c.CategoryId, c.CategoryName,
                 counts.GetValueOrDefault(c.CategoryId)), StringComparer.OrdinalIgnoreCase);
-        var feedback = await db.VwHomeFeedbacks.OrderByDescending(f => f.SubmittedAt).Take(12).ToListAsync();
+        var feedback = await db.VwHomeFeedbacks.OrderBy(f =>
+                f.Category == "demo-electronics" ? 0 :
+                f.Category == "demo-retail" ? 1 :
+                f.Category == "demo-online" ? 2 :
+                f.Category == "demo-business" ? 3 :
+                f.Category == "demo-wholesale" ? 4 : 5)
+            .ThenByDescending(f => f.SubmittedAt).ThenByDescending(f => f.FeedbackId).Take(12).ToListAsync();
         return View(new LandingViewModel(categories, feedback));
     }
 

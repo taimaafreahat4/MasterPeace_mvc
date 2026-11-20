@@ -186,36 +186,18 @@ public sealed class SellerController(StockMindDb db) : StockController
         return RedirectToAction(nameof(Index));
     }
 
-    public IActionResult Tools() => View();
-
-    public async Task<IActionResult> Insights()
+    public async Task<IActionResult> Tools()
     {
-        var seller = await db.SellerProfiles.SingleAsync(s => s.UserId == UserId);
-        ViewBag.Advice = await db.AdvisorAnalyses.Where(a => a.SellerId == seller.SellerId).OrderByDescending(a => a.CreatedAt).ToListAsync();
-        ViewBag.Recommendations = await db.RecommendationAnalyses.Where(a => a.SellerId == seller.SellerId)
-            .OrderByDescending(a => a.CreatedAt).ToListAsync();
-        return View(await Products.ToListAsync());
+        var now = DateTime.UtcNow;
+        ViewBag.PremiumActive = await db.Subscriptions.AnyAsync(s =>
+            s.Seller.UserId == UserId && s.Status == "active" && s.StartAt <= now && s.EndAt > now);
+        return View();
     }
+
+    public IActionResult Insights() => RedirectToAction("Index", "Surplus");
 
     [HttpPost]
-    public async Task<IActionResult> Analyze(long id)
-    {
-        var product = await Products.SingleOrDefaultAsync(p => p.ProductId == id);
-        if (product?.Inventory is not { } inventory) return NotFound();
-        var since = DateTime.UtcNow.AddDays(-28);
-        var sold = await db.OrderItems.Where(i => i.Listing.ProductId == id && i.Order.CreatedAt >= since
-            && i.Order.OrderStatus == "delivered").SumAsync(i => (decimal?)i.Quantity * (i.UnitsPerLot ?? 1)) ?? 0;
-        var weekly = sold / 4;
-        var action = inventory.AvailableQuantity <= inventory.ReorderLevel ? "Review replenishment"
-            : weekly == 0 ? "Review pricing and listing visibility" : "Monitor sales and stock";
-        db.RecommendationAnalyses.Add(new()
-        {
-            SellerId = product.SellerId, InventoryProductId = id, ProductName = product.ProductName,
-            QuantityOnHand = inventory.AvailableQuantity, SalesPerWeek = weekly, SuggestedAction = action
-        });
-        await db.SaveChangesAsync();
-        return RedirectToAction(nameof(Insights));
-    }
+    public IActionResult Analyze(long id) => RedirectToAction("Index", "Surplus", new { productId = id });
 
     private static Listing? Latest(Product p) => p.Listings.MaxBy(l => l.ListingId);
     private Task Categories() => FillCategories();
@@ -223,6 +205,7 @@ public sealed class SellerController(StockMindDb db) : StockController
     internal static bool SafeImage(string url) => (url.StartsWith("/catalog/", StringComparison.Ordinal) && !url.Contains("..") && !url.Contains('\\'))
         || Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == "https";
 }
+
 
 
 

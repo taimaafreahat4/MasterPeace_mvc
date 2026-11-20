@@ -2,7 +2,7 @@
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
     var dashboard = controller == "Seller" && action == "Index";
-    var tools = controller == "Purchase" || action is "Tools" or "Insights" or "Plans";
+    var tools = controller is "Purchase" or "Surplus" || action is "Tools" or "Insights" or "Plans";
 }
 <nav class="sm-seller-tabs" aria-label="Seller navigation">
     <div class="sm-seller-tabs__inner">
@@ -13,4 +13,5 @@
     <button class="sm-seller-tabs__toggle" type="button" aria-expanded="true"><span class="toggle-label">Seller navigation</span><span class="toggle-arrow">⌃</span></button>
 </nav>
 <script defer src="/seller/stockmind_seller_center/mvc-tabs.js"></script>
+
 

@@ -1,0 +1,36 @@
+@model RecommendationAnalysis
+@{
+    Layout = "_SellerWorkspace"; ViewData["Title"] = "Surplus recommendations";
+    var forecast = (SurplusForecast?)ViewBag.Forecast;
+    var stock = Model.QuantityOnHand ?? 0;
+}
+<section class="analysis-frame">
+<header><div><p class="sm-eyebrow">ACTION CENTER</p><h1>Recommended actions</h1><p>Review stock on hand and a forecast based on your recent sales.</p></div><a asp-action="Index" class="sm-btn sm-btn-secondary">New analysis</a></header>
+<div class="analysis-single">
+<article class="analysis-card analysis-identity">
+@if (Model.Photo is not null) { <img alt="Product photo" src="@Url.Action("Photo", new { id = Model.RecommendationId })"> }
+<div><p class="sm-eyebrow">SUGGESTED NEXT ACTION</p><h2>@Model.ProductName</h2><p>@Model.SuggestedAction</p></div></article>
+<div class="analysis-metrics analysis-metrics-four" id="forecast">
+<article><strong>@(forecast?.Midpoint?.ToString() ?? "Sales data needed")</strong>Predicted demand</article>
+<article><strong>@stock units</strong>Remaining stock</article>
+<article><strong>@(forecast?.Risk ?? "—")</strong>Dead-stock risk</article>
+<article><strong>@(forecast?.Midpoint is int midpoint ? Math.Max(0, stock - midpoint).ToString() : "—")</strong>Stock above midpoint</article>
+</div>
+<div class="analysis-layout report-layout">
+<article class="analysis-card"><h3>Sales history vs. forecast</h3>
+@if (forecast?.Midpoint is int demand) {
+    var max = Math.Max(1, Math.Max(forecast.RecentSales ?? 0, forecast.High ?? 0));
+    <p>Projected @forecast.HorizonDays-day range: @forecast.Low–@forecast.High units.</p>
+    <div class="analysis-chart">
+    <div><strong>@forecast.RecentSales</strong><span style="--bar:@((forecast.RecentSales ?? 0) * 100 / max)%"></span><small>Recent 30 days</small></div>
+    <div><strong>@demand</strong><span style="--bar:@(demand * 100 / max)%"></span><small>Forecast midpoint</small></div>
+    </div>
+} else { <p>Enter recorded sales from the last 30 days to estimate demand. Quantity alone cannot predict sales.</p> }
+</article>
+<article class="analysis-card analysis-highlight"><h3>What the forecast suggests</h3><p>@Model.SuggestedAction</p><p>Available stock: @stock units.</p><a asp-controller="Seller" asp-action="Listings">Manage surplus listings →</a></article>
+</div>
+<article class="analysis-card"><p class="sm-eyebrow">FORECAST WORKFLOW</p><h3>How this forecast is produced</h3>
+<ol class="analysis-workflow"><li>Read stock</li><li>Review recent sales</li><li>Project demand</li><li>Compare stock and demand</li><li>Suggest an action</li></ol>
+<p>The estimate scales the last 30 days of sales to the selected period. It is sensitive to changes in demand.</p>
+</article>
+</div></section>

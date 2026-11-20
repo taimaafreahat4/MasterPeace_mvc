@@ -1,14 +1,38 @@
 @model PurchaseForm
-@{ Layout = "_SellerWorkspace"; ViewData["Title"] = "Purchase analysis"; }
-<a asp-controller="Seller" asp-action="Insights">Stock insights</a>
-<h1>Purchase analysis</h1>
-<p>Compare the proposed buying cost and selling price. The estimate uses gross margin before expenses.</p>
-<form class="panel form" asp-action="Index" method="post"><div asp-validation-summary="All"></div>
-<label>Product name <input asp-for="ProductName"></label>
-<label>Category <select asp-for="CategoryId"><option value="">Choose category</option>
+@{ Layout = "_SellerWorkspace"; ViewData["Title"] = "Before You Buy"; }
+<section class="analysis-hero"><div><p class="sm-eyebrow">SMART BUYING · SELLER CENTER</p><h1>Make your next purchase<br><em>with confidence.</em></h1><p>Estimate costs, selling margin, and a starting quantity before buying stock.</p><a href="#purchase-form" class="sm-btn sm-btn-primary">Start product analysis ↓</a></div><div class="analysis-emblem" aria-hidden="true">✦</div></section>
+<section class="analysis-frame" id="purchase-form">
+<header><div><p class="sm-eyebrow">PRODUCT EVALUATION</p><h2>Before You Buy</h2><p>Enter the product and store details for an illustrative recommendation.</p></div><a href="/Seller" class="sm-btn sm-btn-secondary">← Dashboard</a></header>
+<form class="analysis-layout" asp-action="Index" method="post" enctype="multipart/form-data">
+<div>
+<div asp-validation-summary="All"></div>
+<section class="analysis-card"><h3>Product information</h3><p>Define the order you are considering.</p>
+<div class="analysis-product-grid"><label class="analysis-upload">⇧ Product photo <small>Optional · JPG, PNG or WEBP</small><input asp-for="Photo" accept="image/jpeg,image/png,image/webp"></label>
+<div class="analysis-fields">
+<label class="full">Product name <input asp-for="ProductName" placeholder="e.g. Electric heater"></label>
+<label>Cost per unit (JOD) <input asp-for="UnitCost" type="number" min=".01" step=".01"></label>
+<label>Expected selling price (JOD) <input asp-for="SellingPrice" type="number" min=".01" step=".01"></label>
+<label>Planned quantity <input asp-for="Quantity" type="number" min="1"></label>
+<label>Product category <select asp-for="CategoryId"><option value="">Choose category</option>
 @foreach (var category in (IEnumerable<Category>)ViewBag.Categories) { <option value="@category.CategoryId">@category.CategoryName</option> }
 </select></label>
-<label>Units to purchase <input asp-for="Quantity"></label>
-<label>Purchase cost per unit (JOD) <input asp-for="UnitCost" type="number" step="0.01" min="0.01"></label>
-<label>Expected selling price per unit (JOD) <input asp-for="SellingPrice" type="number" step="0.01" min="0.01"></label>
-<button>Save analysis</button></form>
+</div></div></section>
+<section class="analysis-card"><h3>Your store &amp; customers</h3><div class="analysis-fields">
+<label class="full">Store location <input asp-for="StoreLocation"></label>
+<label>Store type <input asp-for="StoreType" placeholder="e.g. Residential area"></label>
+<label>Target customers <input asp-for="TargetCustomers" placeholder="e.g. Young adults"></label>
+<label>Expected arrival season <select asp-for="Season"><option value="">Choose season</option><option>Winter</option><option>Spring</option><option>Summer</option><option>Autumn</option></select></label>
+<label>Past sales of similar products <select asp-for="SimilarSales"><option value="">Unknown</option><option>Low</option><option>Average</option><option>High</option></select></label>
+<label>Similar units already in stock <input asp-for="SimilarStock" type="number" min="0"></label>
+<label>Average visitors per day <input asp-for="VisitorsPerDay" type="number" min="0"></label>
+</div></section></div>
+<aside class="analysis-summary" data-purchase-summary>
+<p class="sm-eyebrow">LIVE ORDER SUMMARY</p><h3>Your product</h3>
+<dl><div><dt>Total investment</dt><dd data-summary="investment">JOD 0.00</dd></div><div><dt>Expected revenue</dt><dd data-summary="revenue">JOD 0.00</dd></div><div><dt>Gross profit</dt><dd data-summary="profit">JOD 0.00</dd></div><div><dt>Profit per unit</dt><dd data-summary="unit">JOD 0.00</dd></div><div class="analysis-margin"><dt>Gross margin</dt><dd data-summary="margin">0%</dd></div></dl>
+<button class="sm-btn sm-btn-primary">Analyze product →</button>
+<p>Estimates use your inputs, before fees and shipping.</p>
+</aside>
+</form>
+</section>
+<partial name="_AnalysisHistory" model="@((IEnumerable<SellerAnalysisSummary>)ViewBag.History)" />
+<script defer src="/seller/stockmind_seller_center/mvc-analysis.js"></script>

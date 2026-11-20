@@ -12,7 +12,7 @@ else
 <tr><td><strong>@item.ProductName</strong><br><small>@item.Category.CategoryName</small></td>
 <td>@(item.Inventory?.AvailableQuantity ?? 0) @if (item.Inventory is { } stock && stock.AvailableQuantity <= stock.ReorderLevel) { <span class="pill">Low stock</span> }</td>
 <td><span class="pill">@item.ApprovalStatus · @item.Status</span> @if (item.RejectionReason is not null) { <p>@item.RejectionReason</p> }</td>
-<td><div class="inline"><a class="button quiet" asp-action="Edit" asp-route-id="@item.ProductId">Edit</a>
+<td><div class="inline"><a class="button quiet" asp-action="Edit" asp-route-id="@item.ProductId">Edit</a> <a class="button quiet" asp-controller="Surplus" asp-action="Index" asp-route-productId="@item.ProductId">Analyze</a>
 @if (item.Status != "archived") { <form asp-action="Archive" asp-route-id="@item.ProductId" method="post"><button class="danger">Archive</button></form> }
 </div></td></tr>
 }

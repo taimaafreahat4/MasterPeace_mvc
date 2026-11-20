@@ -1,0 +1,6 @@
+@model IEnumerable<SellerAnalysisSummary>
+<section class="analysis-card analysis-history"><h2>Saved analyses</h2>
+@if (!Model.Any()) { <p>Your completed analyses will appear here.</p> }
+@foreach (var entry in Model)
+{ <div><span><strong>@entry.Name</strong><small>@entry.Action</small></span><a asp-action="Report" asp-route-id="@entry.Id">View report →</a></div> }
+</section>

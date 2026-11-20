@@ -27,3 +27,5 @@ if ($LASTEXITCODE -ne 0) { throw 'Demo testimonial setup failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Delivery notes setup failed.' }
 & sqlcmd -S $Server -E -C -b -d StockMindMVC -i (Join-Path $PSScriptRoot '05-demo-storefront.sql')
 if ($LASTEXITCODE -ne 0) { throw 'Demo storefront setup failed.' }
+& sqlcmd -S $Server -E -C -b -d StockMindMVC -i (Join-Path $PSScriptRoot '06-seller-analysis-photos.sql')
+if ($LASTEXITCODE -ne 0) { throw 'Seller analysis photos setup failed.' }

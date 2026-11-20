@@ -108,6 +108,7 @@ public partial class StockMindDb : DbContext
             entity.HasKey(e => e.AnalysisId).HasName("PK__AdvisorA__5B789DE89210F020");
 
             entity.Property(e => e.AnalysisId).HasColumnName("AnalysisID");
+            entity.Property(e => e.PhotoType).HasMaxLength(20);
             entity.Property(e => e.BusinessCategory).HasMaxLength(60);
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
@@ -515,6 +516,7 @@ public partial class StockMindDb : DbContext
             entity.HasKey(e => e.RecommendationId).HasName("PK__Recommen__AA15BEC4C907FE6B");
 
             entity.Property(e => e.RecommendationId).HasColumnName("RecommendationID");
+            entity.Property(e => e.PhotoType).HasMaxLength(20);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.InventoryProductId).HasColumnName("InventoryProductID");
             entity.Property(e => e.ProductImageUrl).HasMaxLength(1000);
@@ -853,5 +855,6 @@ public partial class StockMindDb : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+
 
 

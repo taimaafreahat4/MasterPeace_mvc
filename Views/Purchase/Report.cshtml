@@ -1,0 +1,39 @@
+@model AdvisorAnalysis
+@{
+    Layout = "_SellerWorkspace";
+    ViewData["Title"] = "Product analysis results";
+    var scenario = (PurchaseScenario?)ViewBag.Scenario;
+    var quantity = Model.PurchaseQuantity ?? 0;
+    var cost = Model.PurchaseUnitCost ?? 0;
+    var price = Model.ExpectedSellingPrice ?? 0;
+    var margin = price > 0 ? (price - cost) / price * 100 : 0;
+}
+<section class="analysis-frame">
+<header><div><p class="sm-eyebrow">YOUR BUYING REPORT</p><h1>Product analysis results</h1><p>Saved to your seller account.</p></div><a asp-action="Index" class="sm-btn sm-btn-secondary">Analyze another product</a></header>
+<div class="analysis-layout report-layout">
+<div>
+<article class="analysis-card analysis-identity">
+@if (Model.Photo is not null) { <img alt="Product photo" src="@Url.Action("Photo", new { id = Model.AnalysisId })"> }
+<div><p class="sm-eyebrow">PRODUCT REVIEW</p><h2>@Model.ProductName</h2><p>@Model.Category?.CategoryName · @Model.StoreLocation</p></div></article>
+<div class="analysis-metrics"><article><strong>@quantity</strong>Planned quantity</article>
+<article><strong>@(scenario?.Starting.ToString() ?? "—")</strong>Suggested starting quantity</article>
+<article><strong>@margin.ToString("N1")%</strong>Gross margin</article></div>
+<article class="analysis-card"><h3>Illustrative demand outlook</h3>
+@if (scenario?.MonthlyUnits is int monthly) {
+<p>@monthly units per month assuming 4% of visitors buy one unit. Six-month cumulative scenario.</p>
+<div class="analysis-chart" aria-label="Illustrative cumulative demand">
+@for (var month = 1; month <= 6; month++) { <div><strong>@(monthly * month)</strong><span style="--bar:@(monthly == 0 ? 0 : month * 100 / 6)%"></span><small>Month @month</small></div> }
+</div>
+} else { <p>Add daily visitors to estimate demand from foot traffic.</p> }
+</article></div>
+<div><article class="analysis-card analysis-highlight"><p class="sm-eyebrow">RECOMMENDATION</p><h2>@Model.Recommendation</h2><p>Risk indicator: @(Model.RiskScore?.ToString("N0") ?? "—") / 100</p></article>
+<article class="analysis-card"><h3>Why this recommendation?</h3><dl class="analysis-factors">
+<div><dt>Estimated investment</dt><dd>JOD @((quantity * cost).ToString("N2"))</dd></div>
+<div><dt>Expected gross profit</dt><dd>JOD @((quantity * (price - cost)).ToString("N2"))</dd></div>
+<div><dt>Season and past sales</dt><dd>@(scenario?.Season ?? "Unknown") · @(scenario?.SimilarSales ?? "Unknown")</dd></div>
+<div><dt>Store and customers</dt><dd>@Model.StoreType · @Model.TargetCustomers</dd></div>
+</dl></article></div></div>
+<footer class="analysis-actions"><div><strong>Analysis saved</strong><p>Review the estimate before placing an order with your supplier.</p></div><a class="sm-btn sm-btn-secondary" asp-action="Download" asp-route-id="@Model.AnalysisId">Download report ↓</a><a class="sm-btn sm-btn-secondary" asp-action="Index" asp-route-analysisId="@Model.AnalysisId">Edit details</a></footer>
+</section>
+
+

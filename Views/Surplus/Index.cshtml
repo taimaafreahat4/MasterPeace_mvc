@@ -1,0 +1,33 @@
+@model SurplusForm
+@{ Layout = "_SellerWorkspace"; ViewData["Title"] = "AI Recommendations"; }
+<section class="analysis-hero"><div><p class="sm-eyebrow">SURPLUS LISTING INTELLIGENCE</p><h1>Make the next move <em>count.</em></h1><p>Review your surplus quantity, recent sales and the next step for that lot.</p><a asp-controller="Seller" asp-action="Listings" class="sm-btn sm-btn-secondary">View surplus listings ↗</a></div><div class="analysis-emblem" aria-hidden="true">✧</div></section>
+<section class="analysis-frame">
+<header><div><p class="sm-eyebrow">PRODUCT ANALYSIS</p><h2>Analyze a surplus product</h2><p>Enter the total quantity, or start with a product already in your inventory.</p></div></header>
+<div class="analysis-single">
+@if (((IEnumerable<SellerAnalysisSummary>)ViewBag.Listings).Any())
+{
+    <form asp-action="Index" method="get" class="analysis-listing-select">
+    <label>Your listings <select name="productId"><option value="">Choose a product</option>
+    @foreach (var item in (IEnumerable<SellerAnalysisSummary>)ViewBag.Listings) { <option value="@item.Id" selected="@(ViewBag.ProductId == item.Id)">@item.Name</option> }
+    </select></label><button class="sm-btn sm-btn-secondary">Use listing</button></form>
+}
+<form class="analysis-card" asp-action="Index" method="post" enctype="multipart/form-data">
+<input type="hidden" name="productId" value="@ViewBag.ProductId">
+<div asp-validation-summary="All"></div>
+<div class="analysis-fields">
+<label>Product name <input asp-for="Name" placeholder="Example: Wireless headphones"></label>
+<label>Category <select asp-for="CategoryId"><option value="">Choose category</option>
+@foreach (var category in (IEnumerable<Category>)ViewBag.Categories) { <option value="@category.CategoryId">@category.CategoryName</option> }
+</select></label>
+<label>Total surplus quantity <input asp-for="Quantity" type="number" min="1"></label>
+<label>Target price per unit (JOD) <input asp-for="Price" type="number" min=".01" step=".01"></label>
+<label>Units sold in the last 30 days <input asp-for="RecentSales" type="number" min="0"><small>Leave blank if you have no records. Enter 0 if you recorded no sales.</small></label>
+<label>How long has this been surplus? (days) <input asp-for="AgeDays" type="number" min="0"></label>
+<label>Condition <select asp-for="Condition"><option>New</option><option>Good</option><option>Fair</option></select></label>
+<label>Product photo <input asp-for="Photo" accept="image/jpeg,image/png,image/webp"><small>Optional · JPG, PNG or WEBP, up to 1.5 MB</small></label>
+<label>Forecast period <select asp-for="HorizonDays"><option value="7">7 days</option><option value="30">30 days</option><option value="60">60 days</option><option value="90">90 days</option></select></label>
+</div>
+<button class="sm-btn sm-btn-primary">Analyze this product →</button>
+</form></div>
+</section>
+<partial name="_AnalysisHistory" model="@((IEnumerable<SellerAnalysisSummary>)ViewBag.History)" />

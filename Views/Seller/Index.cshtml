@@ -46,7 +46,7 @@
                     <thead><tr><th>Product</th><th>Category</th><th>Available</th><th>Price</th><th>Status</th></tr></thead>
                     <tbody id="overview-listings-body">
 @foreach (var listing in Model.Listings) {
-    <tr><td><a href="/Seller/Edit/@listing.ProductId">@listing.Product.ProductName</a></td><td>@listing.Product.Category.CategoryName</td><td>@listing.ListingQuantity</td><td>@Commerce.Price(listing).ToString("N2") JOD</td><td>@listing.Product.ApprovalStatus · @listing.Status</td></tr>
+    <tr><td><a href="/Seller/Edit/@listing.ProductId">@listing.Product.ProductName</a></td><td>@listing.Product.Category.CategoryName</td><td>@listing.ListingQuantity</td><td>JOD @Commerce.Price(listing).ToString("N2") / @(listing.SellingMethod == "whole_lot" ? "lot" : "unit")</td><td>@listing.Product.ApprovalStatus · @listing.Status</td></tr>
 }
 </tbody>
                 </table>
@@ -58,11 +58,12 @@
                 <a href="/Seller/Edit" class="sm-btn sm-btn-primary">＋ Create your first listing</a>
             </div>
         </section>
-        <p class="seller-overview-note" id="dashboard-data-status" role="status" aria-live="polite"></p>
+        <p class="seller-overview-note" id="dashboard-data-status" role="status" aria-live="polite">@Model.Active.Count approved @(Model.Active.Count == 1 ? "listing is" : "listings are") visible to buyers.</p>
     </main>
     <partial name="_StockFooter" />
 </body>
 </html>
+
 
 
 

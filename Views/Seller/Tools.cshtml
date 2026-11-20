@@ -22,7 +22,7 @@
       <span class="ai-tools-eyebrow"><span></span> STOCK MIND INTELLIGENCE</span>
       <h1>Choose the right tool<br><em>for your next decision.</em></h1>
       <p>Analyze a product before you buy it, or get a practical next step for surplus you already have.</p>
-      <div class="ai-tools-plan" id="ai-tools-plan" role="status" aria-live="polite">Review purchase costs and current stock data.</div>
+      <div class="ai-tools-plan" id="ai-tools-plan" role="status" aria-live="polite">@(ViewBag.PremiumActive == true ? "Premium is active for your seller account." : "Review purchase costs and current stock data.")</div>
     </header>
 
     <section class="ai-tools-grid" aria-label="Stock Mind AI tools">
@@ -30,7 +30,7 @@
         <div class="ai-tool-card__top"><span class="ai-tool-icon" aria-hidden="true">◈</span><span class="ai-tool-label">BUY WITH CONFIDENCE</span></div>
         <h2>Before You Buy</h2>
         <p>Enter a product, its cost, expected selling price, quantity, and store context to review the purchase before committing your budget.</p>
-        <div class="ai-tool-meta"><span>Available tools</span><strong id="buy-allowance">Stock analysis</strong></div>
+        <div class="ai-tool-meta"><span>Available tools</span><strong id="buy-allowance">@(ViewBag.PremiumActive == true ? "Premium active" : "Available")</strong></div>
         <a class="ai-tool-button" href="/Purchase">Open Before You Buy <span aria-hidden="true">→</span></a>
       </article>
 
@@ -38,8 +38,8 @@
         <div class="ai-tool-card__top"><span class="ai-tool-icon" aria-hidden="true">✧</span><span class="ai-tool-label">SELL SURPLUS SMARTER</span></div>
         <h2>AI Recommendations</h2>
         <p>Add a surplus product with its photo and total quantity. Review pricing, demand signals, and suggested actions for that specific lot.</p>
-        <div class="ai-tool-meta"><span>Available tools</span><strong id="rec-allowance">Stock analysis</strong></div>
-        <a class="ai-tool-button" href="/Seller/Insights">Open AI Recommendations <span aria-hidden="true">→</span></a>
+        <div class="ai-tool-meta"><span>Available tools</span><strong id="rec-allowance">@(ViewBag.PremiumActive == true ? "Premium active" : "Available")</strong></div>
+        <a class="ai-tool-button" href="/Surplus">Open AI Recommendations <span aria-hidden="true">→</span></a>
       </article>
     </section>
 
@@ -52,3 +52,4 @@
   <partial name="_StockFooter" />
 </body>
 </html>
+

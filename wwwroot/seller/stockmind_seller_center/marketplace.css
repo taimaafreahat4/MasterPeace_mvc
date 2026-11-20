@@ -37,3 +37,33 @@
 .sm-listing-review-status.is-pending{border-color:#f3dfb8;background:#fff8e9;color:#9b6b13}
 .sm-listing-review-status.is-rejected{border-color:#f2d4d8;background:#fff5f6;color:#ad4c5b}
 .sm-listing-review-status.is-approved{border-color:#d9eee4;background:#f1fbf5;color:#227f5b}
+
+.seller-marketplace{padding-bottom:70px}
+.market-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.market-row h2{margin:0;font-size:1.15rem}
+.market-row p{margin:.35rem 0 .9rem}
+.market-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.market-grid label{display:block;font-size:.87rem;font-weight:700}
+.market-grid :is(input,select,textarea){display:block;width:100%;margin-top:6px;min-height:44px;padding:10px 12px;font:inherit;font-weight:400;color:inherit;border:1px solid #d9def0;border-radius:11px;background:#fff}
+.market-grid input[readonly]{background:#f8f7fc}
+.market-filters{margin:24px 0 16px}
+.market-filters button{margin-top:10px}
+.market-form-panel{padding:clamp(16px,3vw,24px);margin:20px 0}
+.market-form-panel .validation-summary-valid{display:none}
+.market-form-panel .validation-summary-errors{color:#9e2844}
+.market-message{padding:14px 16px;border-radius:12px;background:#f1eaff;font-size:.87rem}
+.market-description{grid-column:1/-1}
+.market-form-actions,.sm-market-actions{display:flex;gap:8px;flex-wrap:wrap}
+.market-form-actions{justify-content:flex-end}
+.market-form-actions>a{margin-right:auto}
+.sm-lot-filter__btn{text-decoration:none;text-align:center}
+.seller-marketplace .sm-products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.seller-marketplace .sm-market-card{overflow:hidden;background:#fff;border:1px solid #e5e2f2;box-shadow:0 10px 24px #160e4010}
+.sm-market-image .photo{width:100%;height:100%;max-height:100%;object-fit:contain;display:grid;place-items:center}
+.sm-market-image .photo svg{width:min(48%,140px)}
+.sm-market-price{font-size:1.25rem;font-weight:800}
+.sm-market-price small{font-size:.75rem;font-weight:400}
+.market-image-picker{grid-template-columns:repeat(2,minmax(0,1fr))}
+.market-image-preview [hidden]{display:none}
+@media(max-width:950px){.seller-marketplace .sm-products{grid-template-columns:repeat(2,minmax(0,1fr))}.market-image-picker{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:620px){.market-grid,.seller-marketplace .sm-products{grid-template-columns:minmax(0,1fr)}.marketplace-store-context{align-items:flex-start;flex-direction:column}}

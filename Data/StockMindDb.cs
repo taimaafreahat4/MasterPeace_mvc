@@ -46,6 +46,8 @@ public partial class StockMindDb : DbContext
 
     public virtual DbSet<Product> Products { get; set; }
 
+    public DbSet<StockMind.Models.ListingPhoto> ListingPhotos => Set<StockMind.Models.ListingPhoto>();
+
     public virtual DbSet<ProductImage> ProductImages { get; set; }
 
     public virtual DbSet<RecommendationAnalysis> RecommendationAnalyses { get; set; }
@@ -80,6 +82,9 @@ public partial class StockMindDb : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var listingPhoto = modelBuilder.Entity<StockMind.Models.ListingPhoto>();
+        listingPhoto.ToTable("ListingPhotos", "dbo").HasKey(p => p.ProductId);
+        listingPhoto.Property(p => p.ProductId).ValueGeneratedNever();
         modelBuilder.Entity<Address>(entity =>
         {
             entity.HasKey(e => e.AddressId).HasName("PK__Addresse__091C2A1B7EBB061A");

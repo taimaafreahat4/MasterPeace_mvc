@@ -2,7 +2,7 @@
 @{
     var image = Model.ProductImages.FirstOrDefault(i => i.IsPrimary)?.ImageUrl;
 }
-@if (image is not null && StockMind.Controllers.SellerController.SafeImage(image) && !image.StartsWith("https://example.com/", StringComparison.OrdinalIgnoreCase))
+@if (image is not null && (StockMind.Controllers.SellerController.SafeImage(image) || image == StockMind.Controllers.SellerController.PhotoUrl(Model.ProductId)) && !image.StartsWith("https://example.com/", StringComparison.OrdinalIgnoreCase))
 {
     <img class="photo" src="@image" alt="@Model.ProductName" loading="lazy" referrerpolicy="no-referrer" />
 }

@@ -29,8 +29,11 @@ public sealed class ProductForm
     [Range(0, 100000)] public int Quantity { get; set; }
     [Range(0, 100000)] public int ReorderLevel { get; set; }
     [Range(1, 100000)] public int Minimum { get; set; } = 1;
+
     public bool WholeLot { get; set; }
-    [Range(1, 100000)] public int LotUnits { get; set; } = 1;
+    [Required, StringLength(30)] public string Condition { get; set; } = "New";
+    public IFormFile? Photo { get; set; }
+    [Range(1, 100000)] public int? LotUnits { get; set; }
     [StringLength(1000)] public string? ImageUrl { get; set; }
 }
 

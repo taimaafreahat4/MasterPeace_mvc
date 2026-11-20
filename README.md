@@ -86,3 +86,7 @@ Remove-Item Env:STOCKMIND_PROVISION_PASSWORD
 ## أدوات البائع
 
 نفذ Database/06-seller-analysis-photos.sql على قاعدة موجودة مسبقاً قبل تشغيل هذا التحديث. تقارير الشراء والتوصيات والصور مرتبطة بحساب البائع. تقدير الشراء يعتمد على مدخلات البائع، ويتطلب توقّع الفائض بيانات آخر 30 يوماً لحساب نطاق الطلب. هذه تقديرات مبنية على قواعد وحسابات، ولا تتصل ببيانات سوق لحظية.
+
+## Seller marketplace
+
+For an existing StockMindMVC database, run the idempotent script Database/07-listing-photos.sql before starting the updated app. The restore script applies it automatically for new installations. Uploaded photos are stored in SQL Server and become public with the approved listing.

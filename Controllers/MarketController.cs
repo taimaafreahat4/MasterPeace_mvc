@@ -48,6 +48,21 @@ public sealed class MarketController(StockMindDb db) : StockController
         return View(listing);
     }
 
+    public async Task<IActionResult> ProductPhoto(long id)
+    {
+        var visible = await Commerce.Available(db).AnyAsync(l => l.ProductId == id);
+        if (!visible && User.Identity?.IsAuthenticated == true)
+            visible = User.IsInRole("admin") || User.IsInRole("seller")
+                && await db.Products.AnyAsync(p => p.ProductId == id && p.Seller.UserId == UserId);
+        if (!visible) return NotFound();
+
+        var photo = await db.ListingPhotos.AsNoTracking().SingleOrDefaultAsync(p => p.ProductId == id);
+        if (photo is null) return NotFound();
+        Response.Headers.CacheControl = "no-store";
+        Response.Headers.XContentTypeOptions = "nosniff";
+        return File(photo.Content, photo.ContentType);
+    }
+
     [Authorize(Roles = "buyer")]
     public async Task<IActionResult> Favorites() => View(await Commerce.Available(db)
         .Where(l => l.Favorites.Any(f => f.UserId == UserId)).ToListAsync());

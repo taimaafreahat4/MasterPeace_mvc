@@ -1,20 +1,140 @@
-@model IEnumerable<Product>
-@{ ViewData["Title"] = "Seller center"; var seller = (SellerProfile)ViewBag.Seller; }
-<h1>Seller center</h1>
-<p>@seller.StoreName · <span class="pill">@seller.VerificationStatus</span></p><partial name="_Nav" />
-<div class="row between"><h2>Inventory</h2><a class="button" asp-action="Edit">Add product</a></div>
-@if (!Model.Any()) { <p class="panel empty">There are no products in your inventory yet.</p> }
-else
-{
-<div class="table-wrap"><table><thead><tr><th>Product</th><th>Stock</th><th>Approval</th><th>Actions</th></tr></thead><tbody>
-@foreach (var item in Model)
-{
-<tr><td><strong>@item.ProductName</strong><br><small>@item.Category.CategoryName</small></td>
-<td>@(item.Inventory?.AvailableQuantity ?? 0) @if (item.Inventory is { } stock && stock.AvailableQuantity <= stock.ReorderLevel) { <span class="pill">Low stock</span> }</td>
-<td><span class="pill">@item.ApprovalStatus · @item.Status</span> @if (item.RejectionReason is not null) { <p>@item.RejectionReason</p> }</td>
-<td><div class="inline"><a class="button quiet" asp-action="Edit" asp-route-id="@item.ProductId">Edit</a> <a class="button quiet" asp-controller="Surplus" asp-action="Index" asp-route-productId="@item.ProductId">Analyze</a>
-@if (item.Status != "archived") { <form asp-action="Archive" asp-route-id="@item.ProductId" method="post"><button class="danger">Archive</button></form> }
-</div></td></tr>
+@model SellerMarketplace
+@{
+    Layout = null;
+    var heading = Model.Form?.Id > 0 ? "Edit marketplace listing" : "Create marketplace listing";
+    var location = string.Join(", ", new[] { Model.Seller.LocationDetails, Model.Seller.City, Model.Seller.Country }.Where(s => !string.IsNullOrWhiteSpace(s)));
+    var notice = Context.Request.Query["notice"].ToString();
 }
-</tbody></table></div>
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Marketplace | Stock Mind</title>
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/seller-shared.css">
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/seller-tabs.css">
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/marketplace.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
+    <script defer src="/seller/stockmind_seller_center/mvc-marketplace.js"></script>
+</head>
+<body data-seller-page="marketplace">
+    <partial name="_StockNavigation" />
+    <div id="seller-tabs-mount"><partial name="_SellerTabs" /></div>
+    <main class="sm-page seller-marketplace">
+        <header class="sm-heading">
+            <div>
+                <span class="sm-eyebrow">STOCK MIND MARKETPLACE</span>
+                <h1>Turn surplus into opportunity.</h1>
+                <p>Publish extra inventory for other businesses and buyers. Approved listings also appear on the Category page.</p>
+            </div>
+            <a class="sm-btn sm-btn-primary" asp-action="Listings" asp-route-add="true" asp-route-category="@Model.Category" asp-route-q="@Model.Query" asp-route-offer="@Model.Offer" asp-fragment="listing-form">+ Add a product</a>
+        </header>
+
+        @if (notice is "product-submitted" or "product-archived")
+        {
+            <p class="sm-card market-message" role="status">@(notice == "product-submitted" ? "Your listing was submitted for marketplace review." : "Your listing was archived.")</p>
+        }
+        @if (Model.Form is { } form)
+        {
+            <section class="sm-card market-form-panel" id="listing-form" aria-labelledby="listing-heading">
+                <header class="market-row">
+                    <div><h2 id="listing-heading">@heading</h2><p class="sm-muted">Complete your product information before submitting for review.</p></div>
+                    <a class="sm-btn sm-btn-secondary" asp-action="Listings" asp-route-category="@Model.Category" asp-route-q="@Model.Query" asp-route-offer="@Model.Offer">Close &times;</a>
+                </header>
+                <partial name="_ListingForm" model="form" view-data="@(new ViewDataDictionary(ViewData) { ["Marketplace"] = Model, ["Location"] = location })" />
+            </section>
+        }
+
+        <form class="market-filters" asp-action="Listings" method="get" asp-fragment="products">
+            <div class="market-grid">
+                <label>Search listings <input name="q" type="search" value="@Model.Query" placeholder="Product, category, seller..."></label>
+                <label>Filter category
+                    <select name="category">
+                        <option value="0">All categories</option>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <option value="@category.CategoryId" selected="@(category.CategoryId == Model.Category)">@category.CategoryName</option>
+                        }
+                    </select>
+                </label>
+            </div>
+            <input type="hidden" name="offer" value="@Model.Offer">
+            <button class="sm-btn sm-btn-secondary" type="submit">Apply filters</button>
+        </form>
+
+        @if (Model.StoreCategory is not null)
+        {
+            <div class="marketplace-store-context market-message">
+                <span>@Model.Seller.StoreName's store category is @Model.StoreCategory. Your listings are included across categories.</span>
+                <a asp-action="StoreProfile">Edit store category</a>
+            </div>
+        }
+        <nav class="sm-lot-filter" aria-label="Selling method">
+            @foreach (var filter in new[] { (Value: (string?)null, Label: "All products"), (Value: "regular", Label: "Buy by quantity"), (Value: "whole_lot", Label: "Whole lots") })
+            {
+                <a class="sm-lot-filter__btn @(Model.Offer == filter.Value ? "is-active" : "")" aria-current="@(Model.Offer == filter.Value ? "true" : null)" asp-action="Listings" asp-route-q="@Model.Query" asp-route-category="@Model.Category" asp-route-offer="@filter.Value" asp-fragment="products">@filter.Label</a>
+            }
+        </nav>
+
+        <section id="products" aria-labelledby="products-heading">
+            <header class="market-row">
+                <div><h2 id="products-heading">Available products</h2><p class="sm-muted">@Model.Listings.Count @(Model.Listings.Count == 1 ? "listing" : "listings")</p></div>
+                <a class="sm-btn sm-btn-secondary" asp-controller="Market" asp-action="Index" asp-route-category="@(Model.Category == 0 ? null : (int?)Model.Category)" asp-route-offer="@Model.Offer">Open Category page &#8599;</a>
+            </header>
+            @if (Model.Listings.Count == 0)
+            {
+                <p class="sm-card market-message">No listings match these filters.</p>
+            }
+            <div class="sm-products">
+                @foreach (var listing in Model.Listings)
+                {
+                    var product = listing.Product;
+                    var own = product.SellerId == Model.Seller.SellerId;
+                    var whole = listing.SellingMethod == "whole_lot";
+                    var approval = listing.Status == "sold" ? "Sold" : product.ApprovalStatus switch
+                    {
+                        "approved" when listing.Status == "active" => "Approved for marketplace",
+                        "approved" => "Approved",
+                        "rejected" => "Changes requested",
+                        _ => "Pending review"
+                    };
+                    var itemLocation = string.Join(", ", new[] { product.Seller.LocationDetails, product.Seller.City, product.Seller.Country }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                    <article class="sm-market-card">
+                        <div class="sm-market-image"><partial name="_Photo" model="product" /></div>
+                        <div class="sm-market-body">
+                            <div class="market-row"><span class="sm-pill">@product.Category.CategoryName</span><span class="sm-pill sm-sale-type">@(whole ? "Whole Lot" : "Buy by Quantity")</span><small class="sm-muted">@itemLocation</small></div>
+                            <h3>@product.ProductName</h3>
+                            <span class="sm-muted">@product.Seller.StoreName &middot; @(product.ProductCondition ?? "Condition unspecified")</span>
+                            @if (own)
+                            {
+                                <span class="sm-listing-review-status is-@product.ApprovalStatus">@approval</span>
+                                @if (!string.IsNullOrWhiteSpace(product.RejectionReason)) { <p class="sm-muted">@product.RejectionReason</p> }
+                            }
+                            <div class="sm-market-price">JOD @Commerce.Price(listing).ToString("N2") <small>/ @(whole ? "entire lot" : "unit")</small></div>
+                            <p class="sm-muted">@listing.ListingQuantity units available &middot; @(whole ? $"{listing.LotUnits} units per lot" : $"Minimum order: {listing.MinOrderQuantity}")</p>
+                            @if (!string.IsNullOrWhiteSpace(product.Description)) { <p class="sm-muted">@product.Description</p> }
+                            <div class="sm-market-actions">
+                                @if (own)
+                                {
+                                    <a class="sm-btn sm-btn-primary" asp-action="Listings" asp-route-edit="@product.ProductId" asp-route-category="@Model.Category" asp-route-q="@Model.Query" asp-route-offer="@Model.Offer" asp-fragment="listing-form">Edit your listing</a>
+                                    <a class="sm-btn sm-btn-secondary" asp-controller="Surplus" asp-action="Index" asp-route-productId="@product.ProductId">Analyze</a>
+                                    <form asp-action="Archive" asp-route-id="@product.ProductId" method="post" data-confirm-archive>
+                                        <button class="sm-btn sm-btn-secondary" type="submit">Archive</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <a class="sm-btn sm-btn-secondary" asp-controller="Market" asp-action="Details" asp-route-id="@listing.ListingId">View listing</a>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+    </main>
+    <partial name="_StockFooter" />
+</body>
+</html>

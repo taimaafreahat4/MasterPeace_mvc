@@ -1,0 +1,74 @@
+@model ProductForm
+@{
+    var market = (SellerMarketplace)ViewData["Marketplace"]!;
+}
+<form asp-action="Edit" asp-fragment="listing-form" method="post" enctype="multipart/form-data" id="market-product-form">
+    <div asp-validation-summary="All" role="alert"></div>
+    <input asp-for="Id" type="hidden">
+    <input asp-for="ReorderLevel" type="hidden">
+    <div class="market-grid">
+        <label>Product name * <input asp-for="Name" required placeholder="Example: Wireless mouse"></label>
+        <label>Category *
+            <select asp-for="CategoryId" required>
+                <option value="">Choose a category</option>
+                @foreach (var category in market.Categories) { <option value="@category.CategoryId">@category.CategoryName</option> }
+            </select>
+        </label>
+        <label>Selling method *
+            <select asp-for="WholeLot">
+                <option value="false">Sell by quantity (buyer chooses quantity)</option>
+                <option value="true">Sell as a whole lot</option>
+            </select>
+        </label>
+        <label><span id="market-price-label">@(Model.WholeLot ? "Price for the entire lot (JOD) *" : "Price per unit (JOD) *")</span>
+            <input asp-for="Price" type="number" min="0" max="100000" step=".01" required>
+        </label>
+        <label><span id="market-quantity-label">@(Model.WholeLot && (!Model.LotUnits.HasValue || Model.LotUnits == Model.Quantity) ? "Units in the lot *" : "Available quantity *")</span>
+            <input asp-for="Quantity" type="number" min="@(Model.WholeLot ? 1 : 0)" max="100000" required>
+        </label>
+        <label id="min-order-field" hidden="@Model.WholeLot">Minimum order quantity
+            <input asp-for="Minimum" type="number" min="1" max="100000" required disabled="@Model.WholeLot">
+        </label>
+        @if (Model.LotUnits.HasValue && Model.LotUnits != Model.Quantity)
+        {
+            <label hidden="@(!Model.WholeLot)">Units per lot
+                <input asp-for="LotUnits" type="number" min="1" max="100000" disabled="@(!Model.WholeLot)">
+            </label>
+        }
+        <label>Stock location <input value="@ViewData["Location"]" placeholder="Set your location in Store Profile" readonly></label>
+        <label>Seller / store <input value="@market.Seller.StoreName" readonly></label>
+        <label>Condition *
+            <select asp-for="Condition" required>
+                @if (Model.Condition is not ("New" or "Like new" or "Good" or "Refurbished"))
+                {
+                    <option value="@Model.Condition">@Model.Condition</option>
+                }
+                @foreach (var condition in new[] { "New", "Like new", "Good", "Refurbished" })
+                {
+                    <option value="@condition">@condition</option>
+                }
+            </select>
+        </label>
+        <div>
+            <label for="Photo">Product photo</label>
+            <div class="market-image-picker">
+                <div class="market-image-preview" data-current-photo="@market.CurrentPhoto">
+                    <img src="@market.CurrentPhoto" hidden="@(market.CurrentPhoto is null)" alt="Product photo preview" referrerpolicy="no-referrer">
+                    <span hidden="@(market.CurrentPhoto is not null)">Product photo preview</span>
+                </div>
+                <div class="market-image-controls">
+                    <input asp-for="Photo" type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-describedby="market-photo-help">
+                    <small id="market-photo-help">PNG, JPEG, WEBP or GIF up to 5 MB.</small>
+                    <label>Or paste an image URL <input asp-for="ImageUrl" placeholder="https://example.com/product.jpg"></label>
+                </div>
+            </div>
+        </div>
+        <label class="market-description">Description <textarea asp-for="Description" rows="3" placeholder="Product details..."></textarea></label>
+    </div>
+    <p class="market-message">Your listing is saved to your account and appears to buyers after approval.</p>
+    <div class="market-form-actions">
+        <a class="sm-btn sm-btn-secondary" asp-action="StoreProfile">Edit store details</a>
+        <button class="sm-btn sm-btn-secondary" type="reset">@(Model.Id == 0 ? "Reset form" : "Reset changes")</button>
+        <button class="sm-btn sm-btn-primary" type="submit">@(Model.Id == 0 ? "Publish listing" : "Save changes") &#8594;</button>
+    </div>
+</form>

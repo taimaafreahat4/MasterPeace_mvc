@@ -77,12 +77,12 @@ var originalRoutes = new Dictionary<string, string>
     ["/seller/stockmind_seller_center/ai-advisor.html"] = "/Purchase",
     ["/seller/stockmind_seller_center/recommendations.html"] = "/Surplus",
     ["/seller/stockmind_seller_center/subscription.html"] = "/Seller/Plans",
-    ["/seller/stockmind_seller_center/subscription-payment.html"] = "/Seller/Plans",
+    ["/seller/stockmind_seller_center/subscription-payment.html"] = "/Seller/PlanCheckout",
     ["/seller/stockmind_seller_center/subscription-confirmation.html"] = "/Seller/Plans",
     ["/seller/stockmind_seller_center/store-profile.html"] = "/Seller/StoreProfile"
 };
 foreach (var (original, destination) in originalRoutes)
-    app.MapGet(original, () => Results.Redirect(destination));
+    app.MapGet(original, (HttpRequest request) => Results.Redirect(destination + request.QueryString));
 
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 app.Run();

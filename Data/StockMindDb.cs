@@ -82,6 +82,11 @@ public partial class StockMindDb : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<StockMind.Models.SellerFreePlan>().ToTable("SellerFreePlans", "dbo").HasKey(p => p.SellerId);
+        modelBuilder.Entity<StockMind.Models.SellerFreePlan>().Property(p => p.SellerId).ValueGeneratedNever();
+        modelBuilder.Entity<StockMind.Models.SubscriptionCheckout>().ToTable("SubscriptionCheckouts", "dbo").HasKey(c => c.CheckoutId);
+        modelBuilder.Entity<StockMind.Models.SubscriptionCheckout>().Property(c => c.CheckoutId).ValueGeneratedNever();
+
         var listingPhoto = modelBuilder.Entity<StockMind.Models.ListingPhoto>();
         listingPhoto.ToTable("ListingPhotos", "dbo").HasKey(p => p.ProductId);
         listingPhoto.Property(p => p.ProductId).ValueGeneratedNever();

@@ -97,3 +97,5 @@ button,input,select{font:inherit}
 .change-plan{font-size:13px}
 .checkout-footnote{font-size:12px}
 @media(max-width:540px){.checkout-steps li{font-size:11px}.checkout-button{min-height:46px;font-size:13px}.payment-state,.demo-pill{font-size:9px}}
+
+#premium-checkout [hidden]{display:none}

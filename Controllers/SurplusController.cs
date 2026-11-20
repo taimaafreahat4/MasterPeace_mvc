@@ -9,13 +9,15 @@ using StockMind.Models.Database;
 namespace StockMind.Controllers;
 
 [Authorize(Roles = "seller")]
-public sealed class SurplusController(StockMindDb db) : StockController
+public sealed class SurplusController(StockMindDb db, IWebHostEnvironment environment) : StockController
 {
     private IQueryable<RecommendationAnalysis> Mine => db.RecommendationAnalyses.AsNoTracking().Where(r => r.Seller.UserId == UserId);
     private IQueryable<Product> Products => db.Products.AsNoTracking().Where(p => p.Seller.UserId == UserId && p.Status != "archived");
 
     public async Task<IActionResult> Index(long? productId)
     {
+        var seller = await SellerSubscriptions.SellerId(db, UserId);
+        if (!await SellerSubscriptions.CanRecommend(db, seller, environment.IsDevelopment())) return ChoosePlan(productId);
         var form = new SurplusForm();
         if (productId is long id)
         {
@@ -38,6 +40,8 @@ public sealed class SurplusController(StockMindDb db) : StockController
     [HttpPost, RequestSizeLimit(1_700_000)]
     public async Task<IActionResult> Index(SurplusForm form, long? productId, CancellationToken cancellationToken)
     {
+        var seller = await SellerSubscriptions.SellerId(db, UserId, cancellationToken);
+        if (!await SellerSubscriptions.CanRecommend(db, seller, environment.IsDevelopment(), cancellationToken)) return ChoosePlan(productId);
         if (productId.HasValue && !await Products.AnyAsync(p => p.ProductId == productId, cancellationToken)) return NotFound();
         if (!await db.Categories.AnyAsync(c => c.IsActive && c.CategoryId == form.CategoryId, cancellationToken))
             ModelState.AddModelError(nameof(form.CategoryId), "Choose an active category.");
@@ -46,7 +50,13 @@ public sealed class SurplusController(StockMindDb db) : StockController
             ModelState.AddModelError(nameof(form.Photo), "Choose a JPG, PNG or WEBP image up to 1.5 MB.");
         if (!ModelState.IsValid) return await Show(form, productId);
 
-        var seller = await db.SellerProfiles.Where(s => s.UserId == UserId).Select(s => s.SellerId).SingleAsync(cancellationToken);
+        await using var transaction = await Commerce.Lock(db);
+        if (!await SellerSubscriptions.HasPremium(db, seller, DateTime.UtcNow, environment.IsDevelopment(), cancellationToken))
+        {
+            var free = await db.Set<SellerFreePlan>().FindAsync([seller], cancellationToken);
+            if (free is null || free.RecommendationUsedAt is not null) return ChoosePlan(productId);
+            free.RecommendationUsedAt = DateTime.UtcNow;
+        }
         int? midpoint = form.RecentSales is int units ? (int)Math.Round(units * form.HorizonDays / 30m) : null;
         var risk = midpoint is null ? "Sales data needed" : midpoint == 0 || form.Quantity > midpoint * 2 ? "High"
             : form.Quantity > midpoint || form.AgeDays >= 90 ? "Moderate" : "Low";
@@ -64,6 +74,7 @@ public sealed class SurplusController(StockMindDb db) : StockController
         };
         db.RecommendationAnalyses.Add(row);
         await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return RedirectToAction(nameof(Report), new { id = row.RecommendationId });
     }
 
@@ -83,6 +94,8 @@ public sealed class SurplusController(StockMindDb db) : StockController
         Response.Headers.CacheControl = "private, no-store";
         return File(image.Photo, image.PhotoType);
     }
+
+    private IActionResult ChoosePlan(long? productId) => RedirectToAction("Plans", "Seller", new { productId, required = true });
 
     private async Task<IActionResult> Show(SurplusForm form, long? productId)
     {

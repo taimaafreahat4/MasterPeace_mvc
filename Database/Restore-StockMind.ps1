@@ -32,3 +32,6 @@ if ($LASTEXITCODE -ne 0) { throw 'Seller analysis photos setup failed.' }
 
 & sqlcmd -S $Server -E -C -b -d StockMindMVC -i (Join-Path $PSScriptRoot '07-listing-photos.sql')
 if ($LASTEXITCODE -ne 0) { throw 'Listing photos setup failed.' }
+
+& sqlcmd -S $Server -E -C -b -d StockMindMVC -i (Join-Path $PSScriptRoot '08-seller-subscription-checkout.sql')
+if ($LASTEXITCODE -ne 0) { throw 'Seller subscription checkout setup failed.' }

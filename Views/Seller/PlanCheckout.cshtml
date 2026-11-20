@@ -1,0 +1,94 @@
+@model SubscriptionCheckoutForm
+@{
+    Layout = null;
+    var plans = (IReadOnlyList<SubscriptionPlan>)ViewBag.Plans;
+    var plan = plans.Single(p => p.PlanId == Model.PlanId);
+    var demo = ViewBag.Demo == true;
+    var monthly = plans.FirstOrDefault(p => p.DurationMonths == 1)?.Price ?? 0;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Premium checkout | Stock Mind</title>
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/subscription-payment.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <script defer src="/seller/stockmind_seller_center/mvc-subscription.js"></script>
+</head>
+<body>
+<partial name="_StockNavigation" />
+<main class="checkout-page">
+    <header class="checkout-heading">
+        <span class="checkout-eyebrow"><span class="checkout-eyebrow__dot"></span> STOCK MIND PREMIUM</span>
+        <h1>Checkout</h1><p>Review your plan and add your billing details.</p>
+    </header>
+    <ol class="checkout-steps" aria-label="Checkout progress">
+        <li class="is-active" aria-current="step"><span>1</span><b>Plan</b></li>
+        <li><span>2</span><b>Billing details</b></li>
+        <li><span>3</span><b>Payment</b></li>
+    </ol>
+    <div class="checkout-layout">
+        <form class="checkout-card" id="premium-checkout" asp-action="PlanCheckout" method="post" data-invalid="@(!ViewData.ModelState.IsValid ? "true" : "false")">
+            <input asp-for="CheckoutId" type="hidden"><input asp-for="ProductId" type="hidden">
+            @if (!ViewData.ModelState.IsValid) { <div asp-validation-summary="All" class="checkout-error" role="alert"></div> }
+            <section class="checkout-stage is-active" data-step="1">
+                <div class="stage-heading"><span class="stage-number">01</span><div><h2>Review your plan</h2><p>Choose the access period for your seller account.</p></div></div>
+                <label class="field-label" asp-for="PlanId">Subscription period</label>
+                <div class="select-wrap">
+                    <select asp-for="PlanId">
+                    @foreach (var item in plans)
+                    {
+                        <option value="@item.PlanId" data-period="@item.DurationMonths @(item.DurationMonths == 1 ? "month" : "months")" data-price="@item.Currency @item.Price.ToString("N2")" data-saving="@item.Currency @Math.Max(0, monthly * item.DurationMonths - item.Price).ToString("N2")">@item.PlanName &middot; @item.Currency @item.Price.ToString("N2")</option>
+                    }
+                    </select>
+                </div>
+                <div class="selected-plan">
+                    <div class="selected-plan__identity"><span class="selected-plan__icon" aria-hidden="true">&#10022;</span><div><strong>Stock Mind Premium</strong><small data-summary="period">@plan.DurationMonths @(plan.DurationMonths == 1 ? "month" : "months")</small></div></div>
+                    <div class="selected-plan__price"><span data-summary="price">@plan.Currency @plan.Price.ToString("N2")</span><small>plan price</small></div>
+                </div>
+                <div class="inline-note">One-time plan. Your access will not renew automatically.</div>
+                <div class="checkout-actions" hidden><span></span><button class="checkout-button" type="button" data-go="2">Continue to billing &#8594;</button></div>
+            </section>
+            <section class="checkout-stage is-active" data-step="2">
+                <div class="stage-heading"><span class="stage-number">02</span><div><h2>Billing details</h2><p>These details are saved with your order.</p></div></div>
+                <div class="fields-grid">
+                    <label class="field"><span>Full name</span><input asp-for="FullName" autocomplete="name" required maxlength="150"></label>
+                    <label class="field"><span>Email address</span><input asp-for="Email" type="email" autocomplete="email" required maxlength="255"></label>
+                    <label class="field"><span>Store name <em>Optional</em></span><input asp-for="StoreName" autocomplete="organization" maxlength="180"></label>
+                    <label class="field"><span>Country</span><input asp-for="Country" autocomplete="country-name" required maxlength="100"></label>
+                </div>
+                <div class="checkout-actions" hidden><button class="checkout-button checkout-button--quiet" type="button" data-go="1">&#8592; Back</button><button class="checkout-button" type="button" data-go="3">Continue to payment &#8594;</button></div>
+            </section>
+            <section class="checkout-stage is-active" data-step="3">
+                <div class="stage-heading"><span class="stage-number">03</span><div><h2>Payment</h2><p>@(demo ? "Complete a test subscription for your seller account." : "Submit your subscription for manual payment confirmation.")</p></div></div>
+                <div class="payment-choice payment-choice--live">
+                    <span class="payment-choice__icon" aria-hidden="true">&#9636;</span><span class="payment-choice__copy"><strong>Card payment</strong><small>Hosted payment provider</small></span><span class="payment-state">Not connected</span>
+                </div>
+                <div class="payment-choice payment-choice--demo">
+                    <span class="payment-choice__icon" aria-hidden="true">&#10003;</span>
+                    <span class="payment-choice__copy"><strong>@(demo ? "Complete demo checkout" : "Manual payment")</strong><small>@(demo ? "No money is charged." : "Your access starts once payment is confirmed.")</small></span>
+                    @if (demo) { <span class="demo-pill">TEST MODE</span> }
+                </div>
+                <label class="confirm-demo"><input asp-for="Confirm" required><span>@(demo ? "I understand this is a demo order and no payment will be taken." : "I confirm that I want to request this subscription.")</span></label>
+                <div class="checkout-actions"><button class="checkout-button checkout-button--quiet" type="button" data-go="2" hidden>&#8592; Back</button><button class="checkout-button checkout-button--complete" type="submit">@(demo ? "Confirm demo order" : "Submit subscription request") &#8594;</button></div>
+            </section>
+        </form>
+        <aside class="order-card" aria-label="Order summary">
+            <div class="order-card__top"><span>ORDER SUMMARY</span><span class="order-lock" aria-hidden="true">&#9671;</span></div>
+            <div class="order-product"><span class="order-product__icon" aria-hidden="true">&#10022;</span><div><strong>Stock Mind Premium</strong><small>Before You Buy &middot; AI Recommendations &middot; Demand Forecast</small></div></div>
+            <div class="order-rule"></div>
+            <div class="order-line"><span>Access period</span><strong data-summary="period">@plan.DurationMonths @(plan.DurationMonths == 1 ? "month" : "months")</strong></div>
+            <div class="order-line"><span>Plan price</span><strong data-summary="price">@plan.Currency @plan.Price.ToString("N2")</strong></div>
+            <div class="order-line order-line--saving"><span>Multi-month saving</span><strong data-summary="saving">@plan.Currency @Math.Max(0, monthly * plan.DurationMonths - plan.Price).ToString("N2")</strong></div>
+            <div class="order-rule"></div>
+            <div class="order-total"><span>@(demo ? "Charged today" : "Total due")</span><strong data-summary="@(demo ? null : "price")">@plan.Currency @((demo ? 0 : plan.Price).ToString("N2"))</strong></div>
+            <p class="order-tax">No automatic renewal.</p>
+            <div class="order-secure">Card details are not collected.</div>
+            <a class="change-plan" asp-action="Plans" asp-route-productId="@Model.ProductId">Change plan</a>
+        </aside>
+    </div>
+</main>
+<partial name="_StockFooter" />
+</body>
+</html>

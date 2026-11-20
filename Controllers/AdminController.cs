@@ -213,7 +213,8 @@ public sealed class AdminController(StockMindDb db) : StockController
         if (payment?.Subscription is not { Status: "scheduled" } subscription) return NotFound();
         var now = DateTime.UtcNow;
         var end = await db.Subscriptions.Where(s => s.SellerId == subscription.SellerId && s.SubscriptionId != subscription.SubscriptionId
-            && s.Status == "active" && s.EndAt > now).MaxAsync(s => (DateTime?)s.EndAt);
+            && s.Status == "active" && s.EndAt > now && s.Plan.Price > 0
+            && !s.Payments.Any(p => p.PaymentMethod == "demo")).MaxAsync(s => (DateTime?)s.EndAt);
         subscription.StartAt = end ?? now;
         subscription.EndAt = subscription.StartAt.AddMonths(subscription.Plan.DurationMonths);
         subscription.PricePaid = payment.Amount;

@@ -1,0 +1,44 @@
+@model SubscriptionCheckout
+@{
+    Layout = null;
+    var subscription = Model.Subscription;
+    var pending = subscription.Status == "scheduled";
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Subscription confirmation | Stock Mind</title>
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/subscription-confirmation.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+    <link rel="stylesheet" href="/components/footer.css">
+</head>
+<body>
+<partial name="_StockNavigation" />
+<main class="confirmation-page">
+    <section class="confirmation-card">
+        <div class="confirmation-mark" aria-hidden="true">&#10003;</div>
+        <span class="confirmation-eyebrow">STOCK MIND PREMIUM</span>
+        <h1>@(pending ? "Subscription request received" : Model.IsDemo ? "Demo subscription confirmed" : "Subscription confirmed")</h1>
+        <p class="confirmation-lead">@subscription.Plan.PlanName</p>
+        @if (pending)
+        {
+            <p>Your Premium access begins once payment is confirmed.</p>
+        }
+        else
+        {
+            <p>Access from @subscription.StartAt.ToString("MMMM d, yyyy") to @subscription.EndAt.ToString("MMMM d, yyyy").</p>
+        }
+        @if (Model.IsDemo) { <p class="demo-banner">No payment was taken.</p> }
+        <div class="confirmation-actions">
+            @if (ViewBag.CanRecommend == true)
+            {
+                <a class="confirmation-button" asp-controller="Surplus" asp-action="Index" asp-route-productId="@ViewBag.ProductId">Open AI Recommendations &#8594;</a>
+            }
+            <a class="confirmation-secondary" asp-action="Plans" asp-route-productId="@ViewBag.ProductId">View plans</a>
+        </div>
+    </section>
+</main>
+<partial name="_StockFooter" />
+</body>
+</html>

@@ -1,14 +1,115 @@
-@model IEnumerable<Subscription>
-@{ ViewData["Title"] = "Subscriptions"; }
-<h1>Subscriptions</h1><partial name="_Nav" />
-<div class="grid">
-@foreach (var plan in (IEnumerable<SubscriptionPlan>)ViewBag.Plans)
-{
-<article class="panel"><h2>@plan.PlanName</h2><p class="price">@plan.Price.ToString("N2") @plan.Currency</p><p>@plan.DurationMonths month(s)</p>
-<ul>@foreach (var feature in plan.Features) { <li>@feature.FeatureName</li> }</ul>
-<form asp-action="RequestPlan" asp-route-id="@plan.PlanId" method="post"><button>Request plan</button></form></article>
+@model SellerPlans
+@{
+    Layout = null;
+    var now = DateTime.UtcNow;
+    var eligible = Model.History.Where(s => ViewBag.Demo == true || !s.Payments.Any(p => p.PaymentMethod == "demo"));
+    var active = eligible.FirstOrDefault(s => s.Status == "active" && s.Plan.Price > 0 && s.StartAt <= now && s.EndAt > now);
+    var next = eligible.FirstOrDefault(s => s.Status == "active" && s.Plan.Price > 0 && s.StartAt > now);
+    var pending = Model.History.Any(s => s.Status == "scheduled");
+    var monthly = Model.Plans.FirstOrDefault(p => p.DurationMonths == 1)?.Price ?? 0;
 }
-</div>
-<h2>Subscription history</h2>
-@if (!Model.Any()) { <p class="panel empty">No subscriptions yet.</p> }
-@foreach (var item in Model) { <p class="panel">@item.Plan.PlanName · @(item.Status == "active" && item.EndAt <= DateTime.UtcNow ? "expired" : item.Status == "active" && item.StartAt > DateTime.UtcNow ? "upcoming" : item.Status) · @item.StartAt.ToString("yyyy-MM-dd") to @item.EndAt.ToString("yyyy-MM-dd")</p> }
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Premium plans | Stock Mind</title>
+    <link rel="stylesheet" href="/seller/stockmind_seller_center/subscription.css">
+    <link rel="stylesheet" href="/css/stock-brand.css">
+    <link rel="stylesheet" href="/components/footer.css">
+</head>
+<body>
+<partial name="_StockNavigation" />
+<main class="sub-page">
+    <section class="hero"><div class="hero__inner">
+        <span class="pill">STOCK MIND &middot; FREEMIUM</span>
+        <h1>Start free. <span>Grow with Premium.</span></h1>
+        <p>Choose a plan to open AI Recommendations and forecast demand for your surplus stock.</p>
+    </div></section>
+    <section class="plans">
+        @if (active is not null || next is not null || pending || Context.Request.Query.ContainsKey("required"))
+        {
+            <div class="subscription-status" role="status">
+                @if (active is not null)
+                {
+                    <p>Premium is active until @active.EndAt.ToString("MMMM d, yyyy"). <a asp-controller="Surplus" asp-action="Index" asp-route-productId="@Model.ProductId">Open AI Recommendations</a></p>
+                }
+                @if (next is not null) { <p>Your next plan starts @next.StartAt.ToString("MMMM d, yyyy").</p> }
+                @if (pending) { <p>Your subscription request is awaiting confirmation.</p> }
+                @if (active is null && Context.Request.Query.ContainsKey("required")) { <p>Choose a plan to continue to AI Recommendations.</p> }
+            </div>
+        }
+        <section class="freemium-overview" aria-label="Free plan">
+            <div><span class="free-plan-label">FREE PLAN &middot; JOD 0</span>
+                <h2>Try AI Recommendations once for free</h2>
+                <p>@(Model.FreeUsed ? "You have used your free analysis." : "Includes a demand forecast when you provide recent sales.") Marketplace and seller dashboard stay free.</p>
+            </div>
+            @if (!Model.FreeUsed && active is null)
+            {
+                <form asp-action="StartFreePlan" method="post">
+                    <input name="productId" type="hidden" value="@Model.ProductId">
+                    <button class="free-plan-button">Continue with the Free plan &#8594;</button>
+                </form>
+            }
+        </section>
+        <div class="plans__grid">
+        @foreach (var plan in Model.Plans)
+        {
+            var savings = Math.Max(0, monthly * plan.DurationMonths - plan.Price);
+            var percent = savings > 0 ? Math.Round(100 * savings / (monthly * plan.DurationMonths)) : 0;
+            var featured = plan.DurationMonths == 6;
+            <article class="plan @(featured ? "is-selected" : "")">
+                @if (featured) { <span class="plan__badge">Best value</span> }
+                <div class="plan__head"><h2 class="plan__name">@plan.DurationMonths @(plan.DurationMonths == 1 ? "month" : "months")</h2>
+                    @if (savings > 0) { <span class="plan__save">Save @percent%</span> }
+                </div>
+                <div class="plan__price"><strong class="plan__amount">@plan.Price.ToString("0.##")</strong> <span class="plan__per">@plan.Currency / @(plan.DurationMonths == 1 ? "month" : $"{plan.DurationMonths} months")</span></div>
+                <p class="plan__sub">@(savings > 0 ? $"{plan.Currency} {plan.Price / plan.DurationMonths:N2} per month · save {plan.Currency} {savings:0.##}" : "Flexible access, one month at a time.")</p>
+                @if (!pending && next is null)
+                {
+                    <a class="plan__btn" asp-action="PlanCheckout" asp-route-id="@plan.PlanId" asp-route-productId="@Model.ProductId">Continue with plan &#8594;</a>
+                }
+                <div class="plan__divider"></div>
+                <ul class="plan__features">
+                    <li>Unlimited surplus analyses during your plan</li>
+                    <li>Demand forecasts using reported sales</li>
+                    <li>Save analyses to your seller account</li>
+                    <li>Review past analysis reports</li>
+                </ul>
+                <p class="plan__fine">One-time plan &middot; no automatic renewal</p>
+            </article>
+        }
+        </div>
+        <ul class="trust"><li>Pricing in JOD</li><li>No automatic renewal</li><li>Access starts after confirmation</li></ul>
+    </section>
+    <section class="faq"><div class="faq__inner">
+        <span class="eyebrow">GOOD TO KNOW</span><h2>Questions before you subscribe</h2>
+        <details class="faq__item" open><summary>What do I get with a subscription?</summary><p>Premium gives you unlimited AI Recommendations and demand forecasts during the selected period. The Free plan includes one analysis.</p></details>
+        <details class="faq__item"><summary>Can I choose a new plan before this one ends?</summary><p>Yes. Your next confirmed plan starts when your current plan ends.</p></details>
+        <details class="faq__item"><summary>What happens when my plan ends?</summary><p>You can still open your saved reports. Choose another Premium plan to continue analyzing after using your free analysis.</p></details>
+        @if (Model.History.Count > 0)
+        {
+            <h2>Subscription history</h2>
+            @foreach (var subscription in Model.History)
+            {
+                var state = subscription.Status == "active"
+                    ? subscription.StartAt > now ? "Scheduled" : subscription.EndAt <= now ? "Expired" : "Active"
+                    : subscription.Status == "scheduled" ? "Awaiting confirmation" : subscription.Status;
+                <p class="faq__item">@subscription.Plan.PlanName &middot; @state &middot; @subscription.StartAt.ToString("MMM d, yyyy") &ndash; @subscription.EndAt.ToString("MMM d, yyyy") @(subscription.Payments.Any(p => p.PaymentMethod == "demo") ? " · Demo" : "")</p>
+            }
+        }
+        @if (Model.Reports.Count > 0)
+        {
+            <h2>Saved recommendations</h2>
+            <ul>
+            @foreach (var report in Model.Reports)
+            {
+                <li><a asp-controller="Surplus" asp-action="Report" asp-route-id="@report.Id">@report.Name</a></li>
+            }
+            </ul>
+        }
+        <a asp-action="Tools">Back to AI Tools</a>
+    </div></section>
+</main>
+<partial name="_StockFooter" />
+</body>
+</html>

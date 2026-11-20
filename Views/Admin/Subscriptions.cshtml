@@ -6,7 +6,7 @@
 {
 <tr><td>@item.Subscription?.Seller.StoreName</td><td>@item.Subscription?.Plan.PlanName</td>
 <td>@item.Amount.ToString("N2") @item.Currency</td>
-<td><div class="inline"><span class="pill">@item.PaymentStatus</span>
+<td><div class="inline"><span class="pill">@(item.PaymentMethod == "demo" ? "Demo confirmed" : item.PaymentStatus)</span>
 @if (item.PaymentStatus == "pending" && item.Subscription?.Status == "scheduled")
 { <form asp-action="ConfirmSubscription" asp-route-id="@item.PaymentId" method="post"><button>Confirm payment received</button></form> }
 </div></td></tr>

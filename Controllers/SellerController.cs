@@ -8,7 +8,7 @@ using StockMind.Models.Database;
 namespace StockMind.Controllers;
 
 [Authorize(Roles = "seller")]
-public sealed class SellerController(StockMindDb db) : StockController
+public sealed partial class SellerController(StockMindDb db, IWebHostEnvironment environment) : StockController
 {
     private IQueryable<Product> Products => db.Products.Where(p => p.Seller.UserId == UserId)
         .Include(p => p.Inventory).Include(p => p.Listings).Include(p => p.Category);
@@ -205,37 +205,6 @@ public sealed class SellerController(StockMindDb db) : StockController
     public async Task<IActionResult> Sales() => View(await db.OrderItems.Include(i => i.Order)
         .Where(i => i.Seller.UserId == UserId).OrderByDescending(i => i.Order.CreatedAt).Take(100).ToListAsync());
 
-    public async Task<IActionResult> Plans()
-    {
-        ViewBag.Plans = await db.SubscriptionPlans.Include(p => p.Features).Where(p => p.IsActive).ToListAsync();
-        return View(await db.Subscriptions.Include(s => s.Plan).Where(s => s.Seller.UserId == UserId)
-            .OrderByDescending(s => s.EndAt).ToListAsync());
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> RequestPlan(int id)
-    {
-        await using var transaction = await Commerce.Lock(db);
-        var seller = await db.SellerProfiles.SingleAsync(s => s.UserId == UserId);
-        if (seller.VerificationStatus != "approved") return Forbid();
-        var plan = await db.SubscriptionPlans.SingleOrDefaultAsync(p => p.PlanId == id && p.IsActive);
-        if (plan is null) return NotFound();
-        if (await db.Subscriptions.AnyAsync(s => s.SellerId == seller.SellerId && s.Status == "scheduled"))
-            return Notice("plan-scheduled", "Seller", nameof(Plans));
-        var now = DateTime.UtcNow;
-        var end = await db.Subscriptions.Where(s => s.SellerId == seller.SellerId && s.Status == "active" && s.EndAt > now)
-            .MaxAsync(s => (DateTime?)s.EndAt);
-        var start = end ?? now;
-        var subscription = new Subscription { SellerId = seller.SellerId, PlanId = plan.PlanId, Status = "scheduled",
-            StartAt = start, EndAt = start.AddMonths(plan.DurationMonths), PricePaid = 0 };
-        db.Subscriptions.Add(subscription);
-        db.Payments.Add(new() { Subscription = subscription, UserId = UserId, Amount = plan.Price, Currency = plan.Currency,
-            PaymentMethod = "manual", PaymentStatus = "pending" });
-        await db.SaveChangesAsync();
-        await transaction.CommitAsync();
-        return Notice("plan-requested", "Seller", nameof(Plans));
-    }
-
     public async Task<IActionResult> StoreProfile()
     {
         var seller = await db.SellerProfiles.SingleAsync(s => s.UserId == UserId);
@@ -269,9 +238,9 @@ public sealed class SellerController(StockMindDb db) : StockController
 
     public async Task<IActionResult> Tools()
     {
-        var now = DateTime.UtcNow;
-        ViewBag.PremiumActive = await db.Subscriptions.AnyAsync(s =>
-            s.Seller.UserId == UserId && s.Status == "active" && s.StartAt <= now && s.EndAt > now);
+        var seller = await SellerSubscriptions.SellerId(db, UserId);
+        ViewBag.PremiumActive = await SellerSubscriptions.HasPremium(db, seller, DateTime.UtcNow, environment.IsDevelopment());
+        ViewBag.CanRecommend = await SellerSubscriptions.CanRecommend(db, seller, environment.IsDevelopment());
         return View();
     }
 

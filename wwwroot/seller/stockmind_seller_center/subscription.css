@@ -197,3 +197,5 @@ body { margin: 0; }
 .sub-page .free-plan-button{display:inline-flex;flex:none;align-items:center;gap:12px;padding:12px 16px;border:1px solid #d9cafb;border-radius:12px;background:#fff;color:#5b21b6;font-size:14px;font-weight:750;text-decoration:none;transition:background .18s,border-color .18s}
 .sub-page .free-plan-button:hover{border-color:#aa8bf0;background:#f8f4ff}
 @media(max-width:640px){.sub-page .plans .freemium-overview{align-items:stretch;flex-direction:column;gap:15px;padding:18px}.sub-page .free-plan-button{justify-content:center}}
+
+.sub-page .plan__features li::before{content:"\2713";color:inherit;margin-right:8px}

@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/seller/stockmind_seller_center/seller-shared.css">
   <link rel="stylesheet" href="/seller/stockmind_seller_center/seller-tabs.css">
   <link rel="stylesheet" href="/seller/stockmind_seller_center/ai-tools.css">
-  <link rel="stylesheet" href="subscription-access.css?v=freemium-2">
+  <link rel="stylesheet" href="/seller/stockmind_seller_center/subscription-access.css?v=freemium-2">
   <link rel="stylesheet" href="/css/stock-brand.css">
   <link rel="stylesheet" href="/components/footer.css">
   <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
@@ -38,8 +38,8 @@
         <div class="ai-tool-card__top"><span class="ai-tool-icon" aria-hidden="true">✧</span><span class="ai-tool-label">SELL SURPLUS SMARTER</span></div>
         <h2>AI Recommendations</h2>
         <p>Add a surplus product with its photo and total quantity. Review pricing, demand signals, and suggested actions for that specific lot.</p>
-        <div class="ai-tool-meta"><span>Available tools</span><strong id="rec-allowance">@(ViewBag.PremiumActive == true ? "Premium active" : "Available")</strong></div>
-        <a class="ai-tool-button" href="/Surplus">Open AI Recommendations <span aria-hidden="true">→</span></a>
+        <div class="ai-tool-meta"><span>Available tools</span><strong id="rec-allowance">@(ViewBag.PremiumActive == true ? "Premium active" : ViewBag.CanRecommend == true ? "Free analysis available" : "Choose a plan")</strong></div>
+        <a class="ai-tool-button" href="@(ViewBag.CanRecommend == true ? "/Surplus" : "/Seller/Plans?required=true")">@(ViewBag.CanRecommend == true ? "Open AI Recommendations" : "Choose a plan") <span aria-hidden="true">→</span></a>
       </article>
     </section>
 

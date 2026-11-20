@@ -90,3 +90,7 @@ Remove-Item Env:STOCKMIND_PROVISION_PASSWORD
 ## Seller marketplace
 
 For an existing StockMindMVC database, run the idempotent script Database/07-listing-photos.sql before starting the updated app. The restore script applies it automatically for new installations. Uploaded photos are stored in SQL Server and become public with the approved listing.
+
+## Seller subscriptions
+
+Run Database/08-seller-subscription-checkout.sql on an existing StockMindMVC database. The restore script applies it for new installations. The free plan includes one recommendation analysis. Development checkout activates a demo subscription with no charge. Production checkout uses the existing admin confirmation flow for manual payments.

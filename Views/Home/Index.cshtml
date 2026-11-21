@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="/components/footer.css">
     <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
     <link rel="stylesheet" href="/home/storefront-home.css" asp-append-version="true">
+    <link rel="stylesheet" href="/home/stockmind-journey.css" asp-append-version="true">
 </head>
 <body class="storefront-home">
 <partial name="_StockNavigation" />
@@ -33,31 +34,42 @@
     <p class="stock-home-notice" role="status">@notice</p>
 }
 <main id="home">
-    <section class="front-hero front-shell" aria-labelledby="front-title">
-        <div class="front-intro">
-            <p class="front-kicker">THE WHOLESALE MARKETPLACE</p>
-            <h1 id="front-title">Find stock.<br><span>Move surplus.</span></h1>
-            <p class="front-lead">Buy wholesale in the quantities you need, or list excess inventory for other businesses to discover.</p>
-            <div class="front-actions">
-                <a class="front-button front-button--primary" asp-controller="Market" asp-action="Index">Browse marketplace <span aria-hidden="true">&#8599;</span></a>
-                <a class="front-button" href="@sellLink">@(User.IsInRole("seller") ? "Manage listings" : "Sell your stock") <span aria-hidden="true">&#8594;</span></a>
+    <section class="sm-journey" aria-label="From inventory to marketplace">
+        <div class="sm-journey__pin">
+            <canvas class="sm-journey__canvas" aria-hidden="true"></canvas>
+            <div class="sm-journey__inner front-shell">
+                <div class="sm-journey__copy">
+                    <div class="sm-journey__scene is-active" data-scene="0">
+                        <p class="sm-journey__eyebrow">THE WHOLESALE MARKETPLACE</p>
+                        <h1>Find stock.<br><em>Move surplus.</em></h1>
+                        <p>Buy wholesale in the quantities you need, or list excess inventory for other businesses to discover.</p>
+                    </div>
+                    <div class="sm-journey__scene" data-scene="1" inert><h2>Every product<br><em>has potential.</em></h2><p>See how inventory moves from the warehouse to the businesses that need it.</p></div>
+                    <div class="sm-journey__scene" data-scene="2" inert><h2>Understand<br><em>your stock.</em></h2><p>Use buying estimates and demand forecasts to decide what to stock next.</p></div>
+                    <div class="sm-journey__scene" data-scene="3" inert><h2>Know what to keep.<br><em>Know what to sell.</em></h2><p>List your surplus at the price and quantity that work for your business.</p></div>
+                    <div class="sm-journey__scene" data-scene="4" inert><h2>Find the right<br><em>wholesale lot.</em></h2><p>Choose the units you need or buy the whole lot.</p></div>
+                    <div class="sm-journey__scene" data-scene="5" inert><h2>Smarter inventory.<br><em>Stronger business.</em></h2><p>Explore Stock Mind to find your next purchase or publish a listing.</p></div>
+                </div>
+                <div class="front-actions sm-journey__actions">
+                    <a class="front-button front-button--primary" asp-controller="Market" asp-action="Index">Browse marketplace <span aria-hidden="true">&#8599;</span></a>
+                    <a class="front-button" href="@sellLink">@(User.IsInRole("seller") ? "Manage listings" : "Sell your stock") <span aria-hidden="true">&#8594;</span></a>
+                </div>
+                <a class="sm-journey__skip" href="#categories">Skip to categories <span aria-hidden="true">&#8595;</span></a>
+                <div class="sm-journey__progress" aria-hidden="true"><i></i></div>
             </div>
-            <form class="front-search" asp-controller="Market" asp-action="Index" method="get" role="search">
-                <label class="front-sr" for="front-query">Search the marketplace</label>
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                <input id="front-query" type="search" name="q" placeholder="Search products or sellers">
-                <button type="submit">Search</button>
-            </form>
         </div>
-        <figure class="front-visual">
-            <img src="/home/images/warehouse-home.jpg" alt="Organized shipping boxes on shelves in a fulfillment warehouse" fetchpriority="high" width="1402" height="1122">
-        </figure>
     </section>
     <section class="front-categories front-shell" id="categories" aria-labelledby="front-categories-title">
         <header class="front-section-heading">
             <div><p class="front-kicker">MARKETPLACE</p><h2 id="front-categories-title">Shop by category</h2></div>
             <a class="front-link" asp-controller="Market" asp-action="Index">View all categories <span aria-hidden="true">&#8594;</span></a>
         </header>
+        <form class="front-search" asp-controller="Market" asp-action="Index" method="get" role="search">
+            <label class="front-sr" for="front-query">Search the marketplace</label>
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="front-query" type="search" name="q" placeholder="Search products or sellers">
+            <button type="submit">Search</button>
+        </form>
         <div class="front-category-grid">
             @foreach (var feature in featured)
             {
@@ -85,6 +97,7 @@
     <partial name="_Testimonials" model="Model.Feedback" />
 </main>
 <partial name="_StockFooter" />
+<script type="module" src="/home/stockmind-journey.js" asp-append-version="true"></script>
 <script type="module" src="/home/mvc-home.js"></script>
 </body>
 </html>

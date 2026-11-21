@@ -1,30 +1,14 @@
-(async () => {
+async function startJourney() {
     const root = document.querySelector('.sm-journey');
     const canvas = root?.querySelector('canvas');
-    if (!root || !canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const pin = root?.querySelector('.sm-journey__pin');
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    if (!root || !canvas || !pin || reduceMotion.matches || !window.WebGL2RenderingContext) return;
 
-    const gsap = window.gsap;
-    const hasScrollTimeline = Boolean(gsap && window.ScrollTrigger);
-    let THREE;
-    try {
-        THREE = await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
-    } catch (error) {
-        console.warn('Three.js could not be loaded; showing the static hero.', error);
-        root.classList.add('sm-journey--static');
-        return;
-    }
-    if (hasScrollTimeline) gsap.registerPlugin(window.ScrollTrigger);
+    const THREE = await import('/lib/three/three.module.min.js');
+    if (reduceMotion.matches) return;
 
-    let renderer;
-    try {
-        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    } catch (error) {
-        console.warn('Stock Mind 3D scene unavailable; showing the static hero.', error);
-        root.classList.add('sm-journey--static');
-        return;
-    }
-    renderer.shadowMap.enabled = window.innerWidth > 760;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.22;
 
@@ -53,11 +37,6 @@
     const parcelTapeMaterial = materials.tape.clone(); parcelTapeMaterial.transparent=true; parcelTapeMaterial.opacity=1; parcelTapeMaterial.depthWrite=false;
     scene.add(new THREE.HemisphereLight(0xc3d0ff, 0x27344e, 1.35));
     const key = new THREE.DirectionalLight(0xe3e7ff, 2.8); key.position.set(-4, 9, 6); scene.add(key);
-    key.castShadow = renderer.shadowMap.enabled;
-    key.shadow.mapSize.set(1024, 1024);
-    key.shadow.camera.near = 1; key.shadow.camera.far = 24;
-    key.shadow.camera.left = -12; key.shadow.camera.right = 12;
-    key.shadow.camera.top = 10; key.shadow.camera.bottom = -8;
     const violet = new THREE.PointLight(0x7646ff, 70, 20, 2); violet.position.set(1.4, 3.8, -1.2); scene.add(violet);
     const warm = new THREE.PointLight(0xe9a871, 34, 17, 2); warm.position.set(-6, 3, -2); scene.add(warm);
     const finalLight = new THREE.PointLight(0xa77aff, 0, 13, 1.7); finalLight.position.set(1.25,2.6,2.5); scene.add(finalLight);
@@ -66,7 +45,7 @@
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(...pos);
         if (scale) mesh.scale.set(...scale);
-        mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
+        parent.add(mesh); return mesh;
     };
     // Warehouse floor, raised lanes and steel shelving establish scale and depth.
     addBox(scene, new THREE.BoxGeometry(32, .25, 28), materials.floor, [0, -.3, -4]);
@@ -102,21 +81,33 @@
     addBox(beltGroup, new THREE.BoxGeometry(12.5, .18, 1.65), materials.belt, [0, .28, 0]);
     addBox(beltGroup, new THREE.BoxGeometry(12.7, .13, .12), materials.steel, [0, .83, -.79]);
     addBox(beltGroup, new THREE.BoxGeometry(12.7, .13, .12), materials.steel, [0, .83, .79]);
-    const rollers = [];
+    const rollerGeometry = new THREE.CylinderGeometry(.14, .14, 1.58, 8);
     for (let x = -6; x <= 6; x += .48) {
-        const roller = new THREE.Mesh(new THREE.CylinderGeometry(.14, .14, 1.58, 12), materials.steel);
-        roller.rotation.z = Math.PI / 2; roller.position.set(x, .61, 0); beltGroup.add(roller); rollers.push(roller);
+        const roller = new THREE.Mesh(rollerGeometry, materials.steel);
+        roller.rotation.z = Math.PI / 2;
+        roller.position.set(x, .61, 0);
+        beltGroup.add(roller);
     }
-    const beltSlats = [];
-    const slatGroup = new THREE.Group(); beltGroup.add(slatGroup);
-    for (let x=-6.15,i=0;x<=6.15;x+=.16,i++) {
-        const slat = new THREE.Mesh(new THREE.BoxGeometry(.115,.055,1.55),i%3===0?materials.steel:materials.darkSteel);
-        slat.position.set(x,.79,0); slat.receiveShadow=true; slatGroup.add(slat); beltSlats.push({mesh:slat,baseX:x});
-    }
+    const slatPositions = Array.from({ length: 77 }, (_, i) => -6.15 + i * .16);
+    const slatGeometry = new THREE.BoxGeometry(.115, .055, 1.55);
+    const slats = [materials.steel, materials.darkSteel].map((material, band) => {
+        const positions = slatPositions.filter((_, i) => Number(i % 3 !== 0) === band);
+        const mesh = new THREE.InstancedMesh(slatGeometry, material, positions.length);
+        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        mesh.frustumCulled = false;
+        beltGroup.add(mesh);
+        return { mesh, positions };
+    });
+    const slatMatrix = new THREE.Matrix4();
     const beltMotion = { offset: 0 };
     function updateBeltSlats() {
-        beltSlats.forEach(({mesh,baseX}) => { mesh.position.x = ((baseX + beltMotion.offset + 6.25) % 12.5) - 6.25; });
-        rollers.forEach((roller,index) => { roller.rotation.y = beltMotion.offset * 1.8 + index * .012; });
+        for (const { mesh, positions } of slats) {
+            positions.forEach((x, i) => {
+                slatMatrix.makeTranslation((x + beltMotion.offset + 6.25) % 12.5 - 6.25, .79, 0);
+                mesh.setMatrixAt(i, slatMatrix);
+            });
+            mesh.instanceMatrix.needsUpdate = true;
+        }
     }
     for (const x of [-5.7, -2.2, 1.4, 5.2]) for (const z of [-.58, .58]) {
         addBox(beltGroup, new THREE.BoxGeometry(.12, .92, .12), materials.darkSteel, [x, .05, z]);
@@ -152,7 +143,7 @@
         addBox(branch, new THREE.BoxGeometry(5.1, .14, 1.25), materials.belt, [2.35, -.2, 0]);
         for (let i = 0; i < 10; i++) {
             const roller = new THREE.Mesh(new THREE.CylinderGeometry(.1, .1, 1.2, 10), materials.steel);
-            roller.rotation.z = Math.PI / 2; roller.position.set(.15 + i * .49, -.13, 0); branch.add(roller); rollers.push(roller);
+            roller.rotation.z = Math.PI / 2; roller.position.set(.15 + i * .49, -.13, 0); branch.add(roller);
         }
         for (let i=0;i<30;i++) addBox(branch,new THREE.BoxGeometry(.11,.045,1.18),i%3===0?materials.steel:materials.darkSteel,[.05+i*.17,.27,0]);
     }
@@ -184,7 +175,7 @@
     const cubeEdgesMaterial = new THREE.LineBasicMaterial({color:0xd7c8ff,transparent:true,opacity:0});
     const cubeEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(.98,.98,.98)),cubeEdgesMaterial);
     cube.add(cubeEdges);
-    const logoTexture = new THREE.TextureLoader().load('../components/logo.png',undefined,undefined,()=>console.warn('Stock Mind logo texture could not be loaded.'));
+    const logoTexture = new THREE.TextureLoader().load('/components/logo.png', () => scheduleFrame());
     logoTexture.colorSpace = THREE.SRGBColorSpace;
     const logoFaceMaterial = new THREE.MeshBasicMaterial({map:logoTexture,transparent:true,opacity:0,depthWrite:false});
     const logoFace = new THREE.Mesh(new THREE.PlaneGeometry(.48,.48),logoFaceMaterial);
@@ -206,7 +197,7 @@
     const clutterPositions = [[-4,.4,2.7],[-3.4,1.25,2.3],[-5.2,.45,3.1],[3.2,.4,2.8],[4.1,1.1,3.1],[-1.7,.38,4.2],[1.1,.35,4.7]];
     clutterPositions.forEach(([x,y,z], i) => { const b = addBox(clutter, new THREE.BoxGeometry(.9 + (i%2)*.3,.72 + (i%3)*.13,.82), i%2 ? materials.cardboard : materials.cardboardLight,[x,y,z]); b.rotation.y = (i%2 ? .24 : -.19); });
     // Sparse dust motes, kept low count for integrated graphics.
-    const dustGeo = new THREE.BufferGeometry(); const dustN = 220; const dustPos = new Float32Array(dustN * 3);
+    const dustGeo = new THREE.BufferGeometry(); const dustN = 120; const dustPos = new Float32Array(dustN * 3);
     for (let i = 0; i < dustN; i++) { dustPos[i*3]=(Math.random()-.5)*22; dustPos[i*3+1]=Math.random()*6; dustPos[i*3+2]=(Math.random()-.5)*18-2; }
     dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos,3));
     const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xc6b9ff, size: .025, transparent: true, opacity: .48 })); scene.add(dust);
@@ -214,8 +205,7 @@
     const cameraRig = { x: -.5, y: 4.6, z: 11.5, tx: -1.8, ty: .8, tz: 0 };
     function placeCamera() { camera.position.set(cameraRig.x,cameraRig.y,cameraRig.z); look.set(cameraRig.tx,cameraRig.ty,cameraRig.tz); camera.lookAt(look); }
     const stages = [...root.querySelectorAll('[data-scene]')];
-    const hud = root.querySelector('[data-hud]');
-    const labels = ['CHAOS → CLARITY','PRODUCT → INSIGHT','INSIGHT → DECISION','KEEP OR SELL','SELLER → MARKET → BUYER','SMARTER INVENTORY'];
+    const progressBar = root.querySelector('.sm-journey__progress i');
     let activeStage = -1;
     function setStage(value) {
         const next = Math.min(5, Math.max(0, Math.floor(value)));
@@ -223,76 +213,9 @@
         stages.forEach((el, index) => {
             const active = index === next;
             el.classList.toggle('is-active', active);
-            el.style.visibility = active ? 'visible' : 'hidden';
-            el.style.opacity = active ? '1' : '0';
+            el.inert = !active;
         });
-        activeStage = next; if (hud) hud.textContent = labels[next];
-        root.classList.toggle('is-reveal',next===5);
-    }
-    const navbarHeight = () => Math.ceil(document.querySelector('.stock-nav')?.getBoundingClientRect().height || 64);
-    root.style.setProperty('--sm-journey-nav-offset', `${navbarHeight()}px`);
-
-    let tl = null;
-    if (hasScrollTimeline) {
-    tl = gsap.timeline({
-        defaults: { ease: 'power2.inOut' },
-        scrollTrigger: { trigger: root, start: () => `top top+=${navbarHeight()}`, end: 'bottom bottom', pin: root.querySelector('.sm-journey__pin'), scrub: 1.15, anticipatePin: 1, invalidateOnRefresh: true, onUpdate: self => { root.querySelector('.sm-journey__progress i').style.width = `${self.progress*100}%`; setStage(self.progress >= .84 ? 5 : Math.min(4, Math.floor(self.progress*6))); } }
-    });
-    // Five scroll beats share one reversible timeline, so the parcel, lens and copy always track the scroll.
-    tl.addLabel('chaos',0).to(cameraRig,{x:-.5,y:4.6,z:11.5,tx:-1.8,ty:.8,tz:0,duration:.8,onUpdate:placeCamera},0)
-      .to(parcel.position,{x:-2.2,y:1.25,z:0,duration:.85},0)
-      .to(clutter.scale,{x:.72,y:.72,z:.72,duration:.75},.5)
-      .addLabel('conveyor',1).to(parcel.position,{x:-.5,y:1.38,z:0,duration:1},1)
-      .to(cameraRig,{x:.2,y:3.8,z:9.3,tx:.2,ty:1.1,tz:0,duration:1,onUpdate:placeCamera},1)
-      .to(beltMotion,{offset:2.7,duration:2.1,onUpdate:updateBeltSlats},1)
-      .to(materials.lightPanel,{emissiveIntensity:2.25,duration:.7},1)
-      .to(materials.beltTrim,{emissiveIntensity:1.45,duration:.6},1)
-      .addLabel('intelligence',2).to(parcel.position,{x:.65,y:1.37,z:0,duration:.65},2)
-      .to(cameraRig,{x:.2,y:3.35,z:7.9,tx:.35,ty:1.15,tz:0,duration:.8,onUpdate:placeCamera},2)
-      .to(violet,{intensity:98,duration:.5},2)
-      .to(beam.material,{opacity:.95,duration:.5,yoyo:true,repeat:3},2)
-      .to(beam.position,{y:.82,duration:.5,yoyo:true,repeat:3},2)
-      .to(scanRing.scale,{x:1.5,y:1.5,z:1.5,duration:.7,yoyo:true,repeat:3},2)
-      .to(holoMaterial,{opacity:.92,duration:.3},2).to(holoPanel.position,{y:2.22,duration:.45,yoyo:true,repeat:3},2)
-      .addLabel('sorting',3).to(keepParcel.scale,{x:.82,y:.82,z:.82,duration:.25},2.92)
-      .to(keepParcel.position,{x:5.7,y:1.19,z:-1.75,duration:.82},3)
-      .to(keepParcel.rotation,{y:.16,duration:.82},3)
-      .to(parcel.position,{x:2.8,y:1.18,z:1.05,duration:.85},3)
-      .to(parcel.rotation,{y:.22,z:.035,duration:.45},2.72)
-      .to(parcel.rotation,{y:0,z:0,duration:.45},3.55)
-      .to(keepParcel.scale,{x:.001,y:.001,z:.001,duration:.2},3.92)
-      .to(holoMaterial,{opacity:0,duration:.2},3)
-      .to(violet,{intensity:62,duration:.65},3)
-      .to(cameraRig,{x:1,y:4.2,z:10,tx:1.4,ty:.8,tz:0,duration:.8,onUpdate:placeCamera},3)
-      .to(branchB.position,{z:1.45,duration:.6},3.15)
-      .addLabel('marketplace',4).to(parcel.position,{x:5.2,y:1.15,z:1.1,duration:1},4)
-      .to(cameraRig,{x:1.3,y:4.7,z:12.3,tx:1.7,ty:.8,tz:0,duration:.8,onUpdate:placeCamera},4)
-      .addLabel('reveal',5).to(cameraRig,{x:.4,y:3.05,z:8.8,tx:.65,ty:1.25,tz:0,duration:.8,onUpdate:placeCamera},5)
-      .to(parcel.position,{x:1.15,y:1.48,z:0,duration:.8},5)
-      .to(parcel.rotation,{y:Math.PI*2,duration:.8},5)
-      .to(scene.fog,{density:.09,duration:.8},5)
-      .to(materials.lightPanel,{emissiveIntensity:1.15,duration:.7},5)
-      .to(materials.beltTrim,{emissiveIntensity:.5,duration:.7},5)
-      .to(scanner.scale,{x:.001,y:.001,z:.001,duration:.8},5)
-      .to(branchA.scale,{x:.02,y:.02,z:.02,duration:.8},5)
-      .to(branchB.scale,{x:.02,y:.02,z:.02,duration:.8},5)
-      .to(beltGroup.scale,{x:.42,y:.28,z:.42,duration:.8},5)
-      .to(roof.scale,{x:.72,y:.72,z:.72,duration:.8},5)
-      .to(floorGrid.material,{opacity:.06,duration:.8},5)
-      .to(clutter.scale,{x:.035,y:.035,z:.035,duration:.8},5)
-      .to(parcelBoxMaterial,{opacity:0,duration:.38},5.18)
-      .to(parcelTapeMaterial,{opacity:0,duration:.32},5.18)
-      .to(parcelLabelMaterial,{opacity:0,duration:.28},5.18)
-      .to(cubeMaterial,{opacity:1,duration:.55},5.22)
-      .to(cube.scale,{x:1.35,y:1.35,z:1.35,duration:.65,ease:'back.out(1.7)'},5.22)
-      .to(cubeEdgesMaterial,{opacity:.92,duration:.45},5.22)
-      .to(logoFaceMaterial,{opacity:1,duration:.5},5.34)
-      .to(revealPlatformMaterial,{opacity:1,duration:.5},5.12)
-      .to(ringMaterial,{opacity:.72,duration:.55},5.18)
-      .to(orbitRing.rotation,{y:Math.PI*2,duration:1.4},5.18)
-      .to(haloRing.rotation,{z:-Math.PI*2,duration:1.8},5.18)
-      .to(finalLight,{intensity:82,duration:.75},5.05)
-      .to(cube.rotation,{x:.12,y:Math.PI*2,duration:1.3},5.22);
+        activeStage = next;
     }
 
     const cameraFrames = [
@@ -300,10 +223,9 @@
         [1,4.2,10,1.4,.8,0], [1.3,4.7,12.3,1.7,.8,0], [.4,3.05,8.8,.65,1.25,0]
     ];
     const parcelFrames = [[-2.2,1.25,0],[-.5,1.38,0],[.65,1.37,0],[2.8,1.18,1.05],[5.2,1.15,1.1],[1.15,1.48,0]];
-    function updateNativeStory() {
-        const top = root.getBoundingClientRect().top + window.scrollY;
-        const scrollable = Math.max(1, root.offsetHeight - window.innerHeight);
-        const progress = THREE.MathUtils.clamp((window.scrollY - top) / scrollable, 0, 1);
+    function updateStory(progress) {
+        dust.rotation.y = progress * .12;
+        scanRing.rotation.z = Math.sin(progress * 20) * .16;
         beltMotion.offset = THREE.MathUtils.clamp((progress-.12)*3.4,0,2.7);
         updateBeltSlats();
         const scaled = Math.min(4.999, progress * 6);
@@ -356,48 +278,111 @@
         scene.fog.density = THREE.MathUtils.lerp(.045,.09,THREE.MathUtils.clamp((progress-.8)*5,0,1));
         cube.rotation.set(.12,progress*Math.PI*12,0);
         parcel.rotation.y = progress > .8 ? (progress-.8)*Math.PI*10 : 0;
-        root.querySelector('.sm-journey__progress i').style.width = `${progress*100}%`;
+        progressBar.style.transform = `scaleX(${progress})`;
         setStage(progress >= .84 ? 5 : Math.min(4, Math.floor(progress*6)));
     }
-    if (!hasScrollTimeline) {
-        root.classList.add('sm-journey--native');
-        window.addEventListener('scroll', updateNativeStory, { passive: true });
-        updateNativeStory();
-    }
 
-    function resize() {
-        const rect = root.querySelector('.sm-journey__pin').getBoundingClientRect();
-        const width = Math.max(1, rect.width), height = Math.max(1, rect.height);
-        root.style.setProperty('--sm-journey-nav-offset', `${navbarHeight()}px`);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 760 ? 1.25 : 1.75));
-        renderer.shadowMap.enabled = window.innerWidth > 760;
-        key.castShadow = renderer.shadowMap.enabled;
-        renderer.setSize(width,height,false); camera.aspect=width/height; camera.updateProjectionMatrix();
-        cameraRig.y = window.innerWidth < 760 ? 4.4 : 4.7; placeCamera();
-        if (hasScrollTimeline) window.ScrollTrigger.refresh();
-        else updateNativeStory();
-    }
-    const clock = new THREE.Clock();
+    const nav = document.querySelector('.stock-nav');
     let frame = 0;
-    function render() {
-        frame = requestAnimationFrame(render);
-        const t = clock.getElapsedTime();
-        dust.rotation.y = t * .008;
-        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            scanRing.rotation.z = Math.sin(t*2.1)*.16;
-        }
-        renderer.render(scene,camera);
-    }
-    const navContainer = document.getElementById('navbar-container');
-    const navObserver = navContainer ? new MutationObserver(() => {
-        if (navContainer.querySelector('.navbar')) { navObserver.disconnect(); resize(); }
-    }) : null;
-    navObserver?.observe(navContainer,{childList:true,subtree:true});
-    window.addEventListener('resize',resize,{passive:true});
-    window.addEventListener('pagehide',()=>{cancelAnimationFrame(frame); navObserver?.disconnect(); window.removeEventListener('resize',resize); window.removeEventListener('scroll',updateNativeStory); tl?.scrollTrigger?.kill(); tl?.kill(); renderer.dispose(); scene.traverse(o=>{if(o.geometry)o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.filter(Boolean).forEach(m=>{m.map?.dispose();m.dispose();});});},{once:true});
-    resize(); placeCamera(); render();
-})().catch(error => {
-    console.error('Stock Mind cinematic hero initialization failed.', error);
-    document.querySelector('.sm-journey')?.classList.add('sm-journey--static');
-});
+    let previousProgress = -1;
+    let previousWidth = 0;
+    let previousHeight = 0;
+    let navOffset = 64;
+    let visible = true;
+    let stopped = false;
 
+    function scheduleFrame() {
+        if (!frame && visible && !stopped && !document.hidden && !reduceMotion.matches) {
+            frame = requestAnimationFrame(render);
+        }
+    }
+
+    function render() {
+        frame = 0;
+        if (!visible || stopped || document.hidden || reduceMotion.matches) return;
+        const nextNavOffset = Math.round(nav?.getBoundingClientRect().height || 64);
+        if (nextNavOffset !== navOffset) {
+            navOffset = nextNavOffset;
+            root.style.setProperty('--sm-nav-height', navOffset + 'px');
+        }
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const resized = width !== previousWidth || height !== previousHeight;
+        if (resized && width && height) {
+            previousWidth = width;
+            previousHeight = height;
+            const pixelBudget = 900000;
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.35, Math.sqrt(pixelBudget / (width * height))));
+            renderer.setSize(width, height, false);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+
+        const distance = Math.max(1, root.offsetHeight - pin.offsetHeight);
+        const progress = THREE.MathUtils.clamp((navOffset - root.getBoundingClientRect().top) / distance, 0, 1);
+        if (progress !== previousProgress) {
+            updateStory(progress);
+            previousProgress = progress;
+        }
+        try {
+            renderer.render(scene, camera);
+            root.classList.add('sm-journey--drawn');
+        } catch (error) {
+            stop();
+            console.warn('Stock Mind is showing its static warehouse image.', error);
+        }
+    }
+
+    const viewport = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) scheduleFrame();
+    });
+    const layout = new ResizeObserver(scheduleFrame);
+
+    function stop() {
+        if (stopped) return;
+        stopped = true;
+        cancelAnimationFrame(frame);
+        root.classList.remove('sm-journey--ready', 'sm-journey--drawn');
+        setStage(0);
+        viewport.disconnect();
+        layout.disconnect();
+        window.removeEventListener('scroll', scheduleFrame);
+        window.removeEventListener('pagehide', onPageHide);
+        document.removeEventListener('visibilitychange', scheduleFrame);
+        reduceMotion.removeEventListener('change', onMotionChange);
+        canvas.removeEventListener('webglcontextlost', stop);
+        renderer.dispose();
+        const resources = new Set();
+        scene.traverse(({ geometry, material }) => {
+            if (geometry) resources.add(geometry);
+            for (const item of (Array.isArray(material) ? material : [material])) {
+                if (!item) continue;
+                if (item.map) resources.add(item.map);
+                resources.add(item);
+            }
+        });
+        resources.forEach(resource => resource.dispose());
+    }
+
+    function onPageHide(event) {
+        if (!event.persisted) stop();
+    }
+
+    function onMotionChange() {
+        if (reduceMotion.matches) stop();
+    }
+
+    root.classList.add('sm-journey--ready');
+    viewport.observe(pin);
+    layout.observe(pin);
+    if (nav) layout.observe(nav);
+    canvas.addEventListener('webglcontextlost', stop);
+    window.addEventListener('scroll', scheduleFrame, { passive: true });
+    window.addEventListener('pagehide', onPageHide);
+    document.addEventListener('visibilitychange', scheduleFrame);
+    reduceMotion.addEventListener('change', onMotionChange);
+    scheduleFrame();
+}
+
+startJourney().catch(error => console.warn('Stock Mind is showing its static warehouse image.', error));

@@ -214,15 +214,72 @@ async function startJourney() {
         }
     }
 
+    const aisleBeam = material(0x99552c, .27);
+    const looseBox = new THREE.Group();
+    movingBox(looseBox, lightKraft, 0, 0, 0, .64, .46, .59);
+    movingBox(looseBox, tape, 0, .235, 0, .085, .012, .591);
+    movingBox(looseBox, white, -.13, .055, .3, .19, .105, .012);
+    scene.add(looseBox);
+    const impactShadow = new THREE.Mesh(new THREE.CircleGeometry(.43, 24),
+        new THREE.MeshBasicMaterial({ color: 0x101a23, transparent: true, opacity: 0, depthWrite: false }));
+    impactShadow.rotation.x = -Math.PI / 2;
+    scene.add(impactShadow);
+
+    const grit = new Float32Array(30 * 3);
+    const gritGeometry = new THREE.BufferGeometry();
+    const gritPositions = new THREE.BufferAttribute(grit, 3).setUsage(THREE.DynamicDrawUsage);
+    gritGeometry.setAttribute('position', gritPositions);
+    const dust = new THREE.Points(gritGeometry,
+        new THREE.PointsMaterial({ color: 0xb59a79, size: .026, transparent: true, depthWrite: false }));
+    dust.frustumCulled = false;
+    scene.add(dust);
+    let fallStarted = null;
+
+    function updateFallingBox(progress, seconds) {
+        if (progress < .51) fallStarted = null;
+        else if (fallStarted === null) fallStarted = seconds;
+        // Holding on Storage plays the drop; scrubbing forward catches the same landing.
+        const scrollTime = THREE.MathUtils.clamp((progress - .57) * 13, 0, 2);
+        const time = Math.max(scrollTime, fallStarted === null ? 0 : seconds - fallStarted);
+        const slide = THREE.MathUtils.smoothstep(time, 0, .52);
+        const drop = THREE.MathUtils.clamp((time - .52) / .64, 0, 1);
+        const bounce = THREE.MathUtils.clamp((time - 1.16) / .36, 0, 1);
+        const x = 2.9 - .82 * slide - .52 * drop - .12 * bounce;
+        const z = -3.73 + .21 * drop + .08 * bounce;
+        const roll = slide * .18 + drop * 1.39 - bounce * Math.PI / 2;
+        const contactHeight = .23 * Math.abs(Math.cos(roll)) + .32 * Math.abs(Math.sin(roll));
+        const y = Math.max(contactHeight, 2.33 - 2.1 * drop * drop)
+            + Math.sin(Math.PI * bounce) * .13;
+        looseBox.position.set(x, y, z);
+        looseBox.rotation.set(0, slide * .18 + drop * .42, roll);
+        impactShadow.position.set(x, .018, z);
+        impactShadow.material.opacity = THREE.MathUtils.lerp(.045, .26, drop);
+        impactShadow.scale.setScalar(1.3 - drop * .42);
+
+        const age = time - 1.16;
+        dust.visible = age >= 0 && age <= .56;
+        if (!dust.visible) return;
+        dust.material.opacity = .44 * (1 - age / .56);
+        for (let i = 0; i < gritPositions.count; i++) {
+            const angle = i * 2.39996;
+            const spread = age * (.35 + i % 7 * .12);
+            gritPositions.setXYZ(i, 1.56 + Math.cos(angle) * spread,
+                .02 + Math.max(0, age * (.43 + i % 4 * .16) - age * age * .95),
+                -3.52 + Math.sin(angle) * spread);
+        }
+        gritPositions.needsUpdate = true;
+    }
+
     // Storage room: four racks, with separate shelves, crates, tape and product labels.
     for (const x of [-6.4, -3.15, 3.15, 6.4]) {
         box(shadow, x, .006, -3.45, 1.82, .006, 5.12);
-        for (const dx of [-.74, .74]) for (const z of [-.95, -3.45, -5.95]) box(navy, x + dx, 1.48, z, .086, 2.96, .086);
-        for (const y of [.22, 1.13, 2.04]) {
+        for (const dx of [-.74, .74]) for (const z of [-.95, -3.45, -5.95]) box(navy, x + dx, 2.35, z, .086, 4.7, .086);
+        for (const y of [.22, 1.13, 2.04, 2.95, 3.86]) {
             box(steel, x, y, -3.45, 1.57, .11, 5.12);
-            box(yellow, x - Math.sign(x) * .8, y, -3.45, .041, .14, 5.1);
+            box(aisleBeam, x - Math.sign(x) * .8, y, -3.45, .041, .14, 5.1);
             for (let slot = 0; slot < 6; slot++) {
                 const z = -1.36 - slot * .79;
+                if (x === 3.15 && y === 2.04 && slot === 3) continue;
                 if ((slot + Math.round(y)) % 4 === 0) box(violet, x, y + .27, z, 1.16, .42, .64);
                 else carton(x, y + .06, z, 1.16, .48 + slot % 2 * .13, .66, slot % 2 === 0);
             }
@@ -294,7 +351,9 @@ async function startJourney() {
         [.36, 0, 2.1, 6.65, 2.4, 1.05, 2.9],
         [.41, 0, 2.08, 7, 3.5, 1.15, 3.8],
         [.49, 0, 2.25, 1.65, .3, 1.16, -4],
-        [.60, 0, 2.45, -2.6, 2.8, 1.2, -5.2],
+        [.54, 0, 2.06, -.75, 1.1, 1.6, -4.9],
+        [.60, 0, 1.75, -1.25, 1.7, 1.17, -3.76],
+        [.65, -.27, 1.68, -2.3, 1.28, .88, -3.65],
         [.72, 0, 2.22, -5.8, .45, 1.1, -10.9],
         [.85, 0, 2.45, -8.75, 3.18, 1.12, -10.85],
         [1, 1.05, 2.22, -10.7, .7, 1.21, -14.25]
@@ -328,6 +387,7 @@ async function startJourney() {
             parcel.position.set(phase - 3.09, 1.125, -13.3);
             parcel.visible = phase > .17 && phase < 6.01;
         });
+        updateFallingBox(progress, seconds);
         progressBar.style.transform = 'scaleX(' + progress + ')';
         setStage(chapterStarts.findLastIndex(start => progress >= start));
     }

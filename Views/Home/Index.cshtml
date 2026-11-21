@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
     <link rel="stylesheet" href="/home/storefront-home.css" asp-append-version="true">
     <link rel="preload" as="image" href="/home/images/warehouse-cinematic.jpg">
-    <link rel="stylesheet" href="/home/warehouse-tower.css" asp-append-version="true">
+    <link rel="stylesheet" href="/home/inventory-intelligence.css" asp-append-version="true">
 </head>
 <body class="storefront-home">
 <partial name="_StockNavigation" />
@@ -34,7 +34,7 @@
     <p class="stock-home-notice" role="status">@notice</p>
 }
 <main id="home">
-    <partial name="_WarehouseTower" />
+    <partial name="_InventoryIntelligence" />
     <section class="front-categories front-shell" id="categories" aria-labelledby="front-categories-title">
         <header class="front-section-heading">
             <div><p class="front-kicker">MARKETPLACE</p><h2 id="front-categories-title">Shop by category</h2></div>
@@ -74,7 +74,7 @@
 </main>
 <partial name="_StockFooter" />
 <script defer src="/lib/three-r128/three.min.js"></script>
-<script defer src="/home/warehouse-tower.js" asp-append-version="true"></script>
+<script defer src="/home/inventory-intelligence.js" asp-append-version="true"></script>
 <script type="module" src="/home/mvc-home.js"></script>
 </body>
 </html>

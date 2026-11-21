@@ -25,10 +25,7 @@
 @if (item.Review is not null) { <span class="pill">@item.Review.ApprovalStatus</span> }
 else
 {
-<form class="inline" asp-action="Review" asp-route-id="@item.OrderItemId" method="post">
-<select name="rating" aria-label="Rating">@for (var n = 5; n >= 1; n--) { <option value="@n">@n / 5</option> }</select>
-<input name="comment" aria-label="Comment" placeholder="Comment" maxlength="2000"><button>Submit</button>
-</form>
+<a asp-action="Feedback" asp-route-id="@Model.OrderId" asp-fragment="@($"item-{item.OrderItemId}")">Write a review</a>
 }
 </td>
 }

@@ -1,0 +1,44 @@
+@model Order
+@{ ViewData["Title"] = "Order feedback"; }
+<div class="page-head">
+    <a asp-action="Details" asp-route-id="@Model.OrderId">Back to order</a>
+    <h1>How was your experience?</h1>
+    <p>Your feedback helps other shoppers and helps us improve Stock Mind.</p>
+</div>
+<div class="grid">
+    <aside class="panel">
+        <h2>Delivered</h2>
+        <p>Order @Model.OrderNumber</p>
+        <p>Order total <strong>JOD @Model.GrandTotal.ToString("N2")</strong></p>
+    </aside>
+    <section class="panel" aria-labelledby="feedback-title">
+        <h2 id="feedback-title">Tell us how it went</h2>
+        @foreach (var item in Model.OrderItems)
+        {
+            <section id="item-@item.OrderItemId">
+                <h3>@item.ProductNameSnapshot</h3>
+                @if (item.Review is not null)
+                {
+                    <p>Your review was submitted. Status: @item.Review.ApprovalStatus</p>
+                }
+                else
+                {
+                    <form asp-action="Review" asp-route-id="@item.OrderItemId" method="post">
+                        <input type="hidden" name="fromFeedback" value="true">
+                        <label for="rating-@item.OrderItemId">Overall experience</label>
+                        <select id="rating-@item.OrderItemId" name="rating" required>
+                            <option value="">Select a rating</option>
+                            @for (var score = 5; score >= 1; score--)
+                            {
+                                <option value="@score">@score / 5</option>
+                            }
+                        </select>
+                        <label for="comment-@item.OrderItemId">Your review (optional)</label>
+                        <textarea id="comment-@item.OrderItemId" name="comment" rows="4" maxlength="500"></textarea>
+                        <button type="submit">Submit review</button>
+                    </form>
+                }
+            </section>
+        }
+    </section>
+</div>

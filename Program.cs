@@ -55,6 +55,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 var originalRoutes = new Dictionary<string, string>
 {
+    ["/home/index.html"] = "/",
+    ["/home/about.html"] = "/Home/About",
+    ["/home/feedback.html"] = "/Home/Feedback",
+    ["/home/help.html"] = "/Home/Help",
+    ["/home/policies.html"] = "/Home/Policies",
+    ["/login/login.html"] = "/Account/Login",
+    ["/login/signup.html"] = "/Account/Register",
     ["/buyer-dashboard/dashboard.html"] = "/Buyer",
     ["/category/category.html"] = "/Market",
     ["/favorite/favorite.html"] = "/Market/Favorites",

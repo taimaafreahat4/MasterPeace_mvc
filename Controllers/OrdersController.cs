@@ -34,6 +34,16 @@ public sealed class OrdersController(StockMindDb db) : StockController
         return order is null ? NotFound() : View(order);
     }
 
+    [Authorize(Roles = "buyer")]
+    public async Task<IActionResult> Feedback(long id)
+    {
+        var order = await Orders.AsNoTracking().Include(o => o.OrderItems).ThenInclude(i => i.Review)
+            .SingleOrDefaultAsync(o => o.OrderId == id);
+        if (order is null) return NotFound();
+        if (order.OrderStatus != "delivered") return RedirectToAction(nameof(Track), new { id });
+        return View(order);
+    }
+
     [HttpGet("/checkout/tracking/tracking.html")]
     [HttpGet("/checkout/confirmation/confirmation.html")]
     [HttpGet("/checkout/feedback/feedback.html")]
@@ -49,12 +59,13 @@ public sealed class OrdersController(StockMindDb db) : StockController
         var path = Request.Path.Value ?? "";
         var action = path.Contains("/tracking/", StringComparison.OrdinalIgnoreCase) ? nameof(Track)
             : path.Contains("/confirmation/", StringComparison.OrdinalIgnoreCase) && User.IsInRole("buyer") ? nameof(Confirmation)
+            : path.Contains("/feedback/", StringComparison.OrdinalIgnoreCase) && User.IsInRole("buyer") ? nameof(Feedback)
             : nameof(Details);
         return RedirectToAction(action, new { id = match.Value });
     }
 
     [Authorize(Roles = "buyer"), HttpPost]
-    public async Task<IActionResult> Review(long id, byte rating, string? comment)
+    public async Task<IActionResult> Review(long id, byte rating, string? comment, bool fromFeedback = false)
     {
         if (rating is < 1 or > 5 || comment?.Length > 2000) return BadRequest();
         await using var transaction = await Commerce.Lock(db);
@@ -68,7 +79,7 @@ public sealed class OrdersController(StockMindDb db) : StockController
             await db.SaveChangesAsync();
         }
         await transaction.CommitAsync();
-        return RedirectToAction(nameof(Details), new { id = item.OrderId });
+        return RedirectToAction(fromFeedback ? nameof(Feedback) : nameof(Details), new { id = item.OrderId });
     }
 }
 

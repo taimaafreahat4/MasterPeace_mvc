@@ -1,0 +1,33 @@
+@{
+    var start = User.IsInRole("seller") ? "/Seller" :
+        User.Identity?.IsAuthenticated == true ? "/Market" : "/Account/Login";
+}
+<section class="stock-intel" id="stock-intel-track" aria-label="Stock Mind inventory intelligence" data-start="@start" data-market="/Market">
+    <span id="home"></span>
+    <div id="stock-intel-app">
+        <div id="stock-intel-stage"></div>
+        <svg id="stock-intel-lines" aria-hidden="true"></svg>
+        <div id="stock-intel-cards"></div>
+        <div class="intel-tools">
+            <a href="#categories" class="intel-skip">Skip to categories &#8595;</a>
+        </div>
+        <div class="copy" id="stock-intel-copy" aria-live="polite">
+            <p class="eye" id="stock-intel-ce">StockMind / Inventory Intelligence</p>
+            <h1 id="stock-intel-ch">Smarter inventory.<br><em>Stronger business.</em></h1>
+            <p class="sub" id="stock-intel-cs">Predict demand. Manage smarter. Turn surplus into opportunity.</p>
+            <div class="cta" id="stock-intel-cc"><a href="/Market">Explore Marketplace</a></div>
+        </div>
+        <div class="intel-hud">
+            <nav class="intel-chapters" aria-label="Warehouse journey">
+                <button type="button" data-p="0" aria-current="step"><small>Start</small>Overview</button>
+                <button type="button" data-p=".12"><small>01</small>Receiving</button>
+                <button type="button" data-p=".35"><small>02</small>Inventory</button>
+                <button type="button" data-p=".65"><small>03</small>Forecasting</button>
+                <button type="button" data-p=".825"><small>04</small>Stock insights</button>
+                <button type="button" data-p=".92"><small>05</small>Marketplace</button>
+            </nav>
+            <div class="intel-progress" aria-hidden="true"><i></i></div>
+        </div>
+        <p class="hint" id="stock-intel-hint">Scroll to enter the warehouse</p>
+    </div>
+</section>

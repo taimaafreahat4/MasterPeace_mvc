@@ -21,6 +21,7 @@
   ];
 
   var stage = document.getElementById('stock-tower-stage');
+  var opening = document.getElementById('stock-tower-opening');
   var noglEl = document.getElementById('stock-tower-nogl');
   var trackEl = document.getElementById('stock-tower-track');
   var levelsEl = document.getElementById('stock-tower-levels');
@@ -587,6 +588,9 @@
     }
 
     // HUD
+    var reveal = sstep(.012, .10, sp);
+    opening.style.opacity = String(1 - reveal);
+    opening.style.transform = 'scale(' + (1 + reveal * .07) + ')';
     showChapter(chapterFor(target));
     railFill.style.height = (target * 100).toFixed(1) + '%';
     hudTop.classList.toggle('is-away', target > 0.04);

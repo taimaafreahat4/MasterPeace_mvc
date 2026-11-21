@@ -154,3 +154,53 @@
     .stock-tower .tower-story h2 { font-size: clamp(1.5rem, 4.5vw, 2.5rem); }
     .stock-tower .tower-story > p:not(.eyebrow) { margin-bottom: 8px; }
 }
+
+/* Warehouse opening and floor controls. */
+.stock-tower {
+    --bg: #0b1034;
+    --glass: rgba(15, 23, 74, .84);
+    --violet: #b2a2fa;
+    --lav: #ded8ff;
+    --mute: #dedcfb;
+    --line: #8c83e05c;
+}
+.stock-tower .tower-opening {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--bg) url('/home/images/fulfillment-center-opening.png') center / cover no-repeat;
+    transform-origin: 70% 60%;
+}
+.stock-tower .hud-top, .stock-tower .hud-bottom { padding-inline: clamp(16px, 2.2vw, 38px); }
+.stock-tower .hud-top { padding-top: clamp(20px, 3.5vh, 36px); }
+.stock-tower .hud-bottom { padding-bottom: clamp(16px, 3.2vh, 32px); gap: 15px; }
+.stock-tower .eyebrow { font-size: clamp(11px, .94vw, 16px); color: #f2efff; }
+.stock-tower h1 { font-size: clamp(2rem, 3.5vw, 3.8rem); font-weight: 700; }
+.stock-tower .intro p:last-child { font-size: clamp(14px, 1.23vw, 21px); margin-top: 17px; }
+.stock-tower .hint { font-size: clamp(12px, 1vw, 17px); padding: 8px 16px; }
+.stock-tower .tower-skip { position: absolute; top: 78px; right: clamp(16px, 2.2vw, 38px); opacity: 0; }
+.stock-tower .tower-skip:focus-visible { opacity: 1; }
+.stock-tower .detail {
+    width: min(100%, 38vw);
+    max-width: 640px;
+    padding: clamp(12px, 1.3vw, 22px);
+    border-radius: 18px;
+    background: linear-gradient(125deg, #0b1443ee, #121951dc);
+}
+.stock-tower .detail .lvl, .stock-tower .lv .n { font-size: clamp(10px, .88vw, 15px); }
+.stock-tower .detail h2 { font-size: clamp(17px, 1.5vw, 26px); }
+.stock-tower .detail p:last-child { font-size: clamp(13px, 1.2vw, 20px); }
+.stock-tower .levels { gap: clamp(7px, .7vw, 12px); }
+.stock-tower .lv { min-width: clamp(130px, 11.25vw, 190px); padding: 12px clamp(12px, 1.05vw, 18px); border-radius: 13px; }
+.stock-tower .lv .t { font-size: clamp(13px, 1.1vw, 18px); }
+.stock-tower .lv[aria-pressed="true"] { background: linear-gradient(120deg, #2a245aee, #39347ce0); }
+.stock-tower .lv:last-child:not([aria-pressed="true"]), .stock-tower .rail { display: none; }
+.stock-tower.has-story .lv:last-child { display: block; }
+
+@media (max-width: 720px) {
+    .stock-tower .tower-opening {
+        background-image: linear-gradient(180deg, #0b1034bb, transparent 40%, #0b103477), url('/home/images/fulfillment-center-opening.png');
+        background-position: 66% center;
+    }
+    .stock-tower .detail { width: min(100%, 32rem); }
+}

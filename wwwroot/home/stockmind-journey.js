@@ -315,6 +315,118 @@ async function startJourney() {
         box(violet, x, 1.52, -12.79, .45, .035, .026);
     }
 
+    const robotOrange = material(0xb7612b, .24);
+    const trackingLight = new THREE.MeshBasicMaterial({ color: 0x84ddff });
+    const scanLight = new THREE.MeshBasicMaterial({ color: 0x63c9ff, transparent: true, opacity: .7, depthWrite: false });
+    const wire = new THREE.EdgesGeometry(geometry);
+    const scanFrame = new THREE.LineSegments(wire, new THREE.LineBasicMaterial({ color: 0xa5e8ff, transparent: true, opacity: .55 }));
+    scanFrame.scale.set(1.25, .85, .95);
+    scanFrame.position.set(2.96, 1.18, 6.8);
+    scene.add(scanFrame);
+    box(navy, 2.96, .68, 6.8, 1.85, .16, .96);
+    box(steel, 2.96, 1.12, 6.8, 1.18, .7, .87);
+
+    function createArm(x, z, heading) {
+        const base = new THREE.Group();
+        base.position.set(x, .19, z);
+        scene.add(base);
+        movingBox(base, navy, 0, .2, 0, .56, .44, .57);
+        const shoulder = new THREE.Group();
+        shoulder.position.y = .51;
+        shoulder.rotation.y = heading;
+        base.add(shoulder);
+        movingBox(shoulder, robotOrange, 0, .47, 0, .21, .96, .22);
+        movingBox(shoulder, navy, 0, .94, 0, .26, .27, .28);
+        const elbow = new THREE.Group();
+        elbow.position.y = .94;
+        shoulder.add(elbow);
+        movingBox(elbow, robotOrange, 0, .35, 0, .16, .72, .17);
+        movingBox(elbow, navy, 0, .72, 0, .22, .16, .24);
+        for (const side of [-1, 1]) movingBox(elbow, steel, side * .07, .8, 0, .033, .13, .12);
+        return { shoulder, elbow };
+    }
+
+    const arms = [createArm(2.1, 6.9, 0), createArm(3.87, 6.62, Math.PI)];
+    const carts = [-1, 1].map(side => {
+        const cart = new THREE.Group();
+        movingBox(cart, navy, 0, .105, 0, .76, .2, .99);
+        movingBox(cart, yellow, 0, .22, 0, .82, .13, 1.02);
+        movingBox(cart, trackingLight, 0, .215, .519, .42, .035, .012);
+        movingBox(cart, lightKraft, 0, .5, 0, .64, .43, .69);
+        movingBox(cart, tape, 0, .721, 0, .066, .009, .7);
+        scene.add(cart);
+        const outline = new THREE.LineSegments(wire, new THREE.LineBasicMaterial({
+            color: 0x8ddfff, transparent: true, opacity: .5, depthWrite: false
+        }));
+        outline.scale.set(.68, .46, .73);
+        outline.position.y = .5;
+        cart.add(outline);
+        return { side, cart, outline };
+    });
+
+    const scanner = new THREE.Group();
+    const scanStripe = new THREE.Mesh(geometry, scanLight);
+    scanStripe.scale.set(4.2, .016, .032);
+    scanner.add(scanStripe);
+    scene.add(scanner);
+
+    function packingRobot(x, z) {
+        const robot = new THREE.Group();
+        robot.position.set(x, 0, z);
+        robot.rotation.y = -.25;
+        scene.add(robot);
+        for (const side of [-1, 1]) {
+            movingBox(robot, navy, side * .16, .12, .05, .23, .18, .43);
+            movingBox(robot, robotOrange, side * .15, .51, 0, .18, .65, .21);
+        }
+        movingBox(robot, robotOrange, 0, 1.08, 0, .54, .54, .31);
+        movingBox(robot, navy, 0, 1.4, 0, .16, .19, .16);
+        const helmet = new THREE.Mesh(new THREE.SphereGeometry(.195, 16, 12), robotOrange);
+        helmet.position.y = 1.58;
+        helmet.scale.set(.93, 1.13, .88);
+        robot.add(helmet);
+        movingBox(robot, navy, 0, 1.59, .141, .27, .22, .085);
+        movingBox(robot, trackingLight, 0, 1.61, .188, .14, .018, .008);
+        return [-1, 1].map(side => {
+            const shoulder = new THREE.Group();
+            shoulder.position.set(side * .35, 1.29, 0);
+            robot.add(shoulder);
+            movingBox(shoulder, robotOrange, 0, -.153, 0, .16, .31, .16);
+            const forearm = new THREE.Group();
+            forearm.position.y = -.31;
+            shoulder.add(forearm);
+            movingBox(forearm, robotOrange, 0, -.13, .01, .14, .27, .16);
+            movingBox(forearm, navy, 0, -.29, .025, .13, .09, .13);
+            return { shoulder, forearm };
+        });
+    }
+
+    const sorters = [packingRobot(3.35, -11.0), packingRobot(5.0, -11.1), packingRobot(-4.1, -11.2)];
+
+    function updateAutomation(progress, seconds) {
+        const motion = seconds * 1.6 + progress * 14;
+        scanFrame.material.opacity = .35 + .25 * Math.sin(motion);
+        for (const [i, { shoulder, elbow }] of arms.entries()) {
+            const reach = .5 + .5 * Math.sin(motion + i * 1.6);
+            shoulder.rotation.z = (i === 0 ? -1 : 1) * (.23 + reach * .63);
+            elbow.rotation.z = (i === 0 ? -1 : 1) * (.45 + reach * .7);
+        }
+        for (const { side, cart, outline } of carts) {
+            const t = seconds * .54 + progress * 5 + side;
+            cart.position.set(side * 1.16, 0, -3.65 + Math.sin(t) * 1.87);
+            cart.rotation.y = side === 1 ? 0 : Math.PI;
+            outline.visible = progress > .46 && progress < .73;
+        }
+        scanner.visible = progress > .48 && progress < .7;
+        scanner.position.set(0, .022, -3.5 + Math.sin(motion * .83) * 2.65);
+        scanLight.opacity = .13 + .29 * Math.max(0, Math.sin(motion));
+        for (const [i, pair] of sorters.entries()) for (const [j, { shoulder, forearm }] of pair.entries()) {
+            const reach = .5 + .5 * Math.sin(motion + i * 1.7 + j * .7);
+            shoulder.rotation.x = -.36 - reach * .72;
+            forearm.rotation.x = -.62 - reach * .54;
+        }
+    }
+
     for (const [paint, matrices] of transforms) {
         const batch = new THREE.InstancedMesh(geometry, paint, matrices.length);
         matrices.forEach((matrix, i) => batch.setMatrixAt(i, matrix));
@@ -346,16 +458,18 @@ async function startJourney() {
     // Each shot ends before the next doorway so the camera has a clear path.
     const shots = [
         [0, -.4, 2.15, 13.8, .2, 1.65, -8],
-        [.13, -.12, 2.06, 12.2, .15, 1.65, -4],
-        [.26, 0, 2.35, 10.9, 0, 1.55, 4.5],
-        [.36, 0, 2.1, 6.65, 2.4, 1.05, 2.9],
+        [.055, -.8, 4.62, 13.2, 1.36, 1.48, 4.1],
+        [.14, -.5, 3.62, 11.6, 1.65, 1.39, 6.55],
+        [.26, 0, 2.36, 9.46, 1.15, 1.38, 5.9],
+        [.36, 0, 2.01, 6.65, 1.5, 1.12, 2.9],
         [.41, 0, 2.08, 7, 3.5, 1.15, 3.8],
         [.49, 0, 2.25, 1.65, .3, 1.16, -4],
         [.54, 0, 2.06, -.75, 1.1, 1.6, -4.9],
         [.60, 0, 1.75, -1.25, 1.7, 1.17, -3.76],
         [.65, -.27, 1.68, -2.3, 1.28, .88, -3.65],
         [.72, 0, 2.22, -5.8, .45, 1.1, -10.9],
-        [.85, 0, 2.45, -8.75, 3.18, 1.12, -10.85],
+        [.79, -.38, 2.39, -7.6, 2.7, 1.19, -10.72],
+        [.85, .75, 2.16, -8.92, 3.5, 1.28, -11.05],
         [1, 1.05, 2.22, -10.7, .7, 1.21, -14.25]
     ];
     const lerp = THREE.MathUtils.lerp;
@@ -387,6 +501,7 @@ async function startJourney() {
             parcel.position.set(phase - 3.09, 1.125, -13.3);
             parcel.visible = phase > .17 && phase < 6.01;
         });
+        updateAutomation(progress, seconds);
         updateFallingBox(progress, seconds);
         progressBar.style.transform = 'scaleX(' + progress + ')';
         setStage(chapterStarts.findLastIndex(start => progress >= start));

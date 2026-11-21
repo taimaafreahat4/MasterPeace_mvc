@@ -14,11 +14,21 @@ async function startJourney() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, 1, .06, 90);
     const target = new THREE.Vector3();
-    scene.fog = new THREE.Fog(0xe1eaf7, 39, 72);
+    scene.fog = new THREE.FogExp2(0xc1cde0, .028);
     scene.add(new THREE.HemisphereLight(0xf4f8ff, 0x8d97af, 2));
-    const sun = new THREE.DirectionalLight(0xffeddb, 2.65);
+    const sun = new THREE.DirectionalLight(0xffe6ce, 2.05);
     sun.position.set(8, 14, 10);
-    scene.add(sun);
+    sun.target.position.set(0, 0, -4);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 17, bottom: -17, near: .5, far: 48 });
+    sun.shadow.camera.updateProjectionMatrix();
+    sun.shadow.normalBias = .035;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = true;
+    scene.add(sun, sun.target);
 
     const material = (color, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness: .76, metalness });
     const concrete = material(0xc9d3e2), trim = material(0x8a9bb2), white = material(0xf1f4f9);
@@ -27,6 +37,28 @@ async function startJourney() {
     const wood = material(0x936d4d), violet = material(0x7858bb), yellow = material(0xf2b53f);
     const rubber = material(0x263141), screen = new THREE.MeshBasicMaterial({ color: 0x82b9df });
     const shadow = new THREE.MeshBasicMaterial({ color: 0xa0afc3 });
+    function grain(seed, strength) {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        const pixels = ctx.createImageData(128, 128);
+        for (let i = 0; i < pixels.data.length; i += 4) {
+            seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+            const value = 255 - (seed >>> 24) / 256 * strength;
+            pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = value;
+            pixels.data[i + 3] = 255;
+        }
+        ctx.putImageData(pixels, 0, 0);
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        return texture;
+    }
+
+    concrete.map = grain(32, 25);
+    const paper = grain(56, 19);
+    kraft.map = paper;
+    lightKraft.map = paper;
+
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const transforms = new Map();
     const dummy = new THREE.Object3D();
@@ -79,7 +111,18 @@ async function startJourney() {
         scene.add(mesh);
     }
 
-    // The open roof makes the three rooms visible from the first camera position.
+    // The repeating trusses and skylights give the aisle a consistent vanishing point.
+    const litPanel = new THREE.MeshBasicMaterial({ color: 0xf1f4ff });
+    box(navy, 0, 6.05, -3.6, 17, .19, 23);
+    for (let z = -13; z <= 8; z += 3.4) {
+        box(steel, 0, 5.75, z, 16.7, .18, .25);
+        for (const side of [-1, 1]) {
+            box(navy, side * 7.98, 3, z, .23, 6, .24);
+            box(navy, side * 4.1, 5.49, z, 2.5, .13, .4);
+            box(litPanel, side * 4.1, 5.41, z, 2.3, .04, .27);
+        }
+        box(litPanel, 0, 5.927, z - 1.2, 2.4, .025, .85);
+    }
     box(trim, 0, -.52, -3.2, 17.5, .4, 25.2);
     box(concrete, 0, -.16, -3.2, 17, .32, 24.8);
     box(concrete, 0, -.15, 10.8, 7.4, .3, 3.4);
@@ -105,11 +148,11 @@ async function startJourney() {
     function doorway(z, name, street = false) {
         for (const side of [-1, 1]) {
             const height = street ? 1.02 : 2.22;
-            box(white, side * 5.02, height / 2, z, 6.5, height, .25);
-            box(navy, side * 1.76, 1.68, z, .2, 3.36, .32);
+            box(white, side * 5.33, height / 2, z, street ? 5.87 : 6.5, height, .25);
+            box(navy, side * (street ? 2.4 : 1.76), 1.68, z, .2, 3.36, .32);
             box(yellow, side * 2.03, .45, z + .28, .13, .9, .13);
         }
-        box(navy, 0, 3.36, z, 3.7, .22, .34);
+        box(navy, 0, 3.36, z, street ? 5 : 3.7, .22, .34);
         sign(name, 0, 3.64, z + .18, 2.62);
     }
     doorway(8.15, 'STOCK MIND', true);
@@ -119,8 +162,8 @@ async function startJourney() {
     const doors = [-1, 1].map(side => {
         const panel = new THREE.Group();
         scene.add(panel);
-        movingBox(panel, steel, 0, 1.6, 8.18, 1.66, 3.18, .18);
-        for (let row = 1; row < 11; row++) movingBox(panel, navy, 0, row * .28, 8.285, 1.64, .023, .028);
+        movingBox(panel, steel, 0, 1.6, 8.18, 2.28, 3.18, .18);
+        for (let row = 1; row < 11; row++) movingBox(panel, navy, 0, row * .28, 8.285, 2.26, .023, .028);
         return { side, panel };
     });
 
@@ -131,20 +174,42 @@ async function startJourney() {
         carton(x + .34, .2, z, .64, .57, .85);
         if (z > 5) carton(x, .78, z, .97, .49, .71);
     }
-    box(shadow, 4.2, .007, 1.82, 1.38, .006, 2.32);
-    box(yellow, 4.2, .49, 2, 1.03, .64, 1.43);
-    box(navy, 4.2, .85, 2.16, .55, .16, .53);
-    box(navy, 4.2, 1.68, 2.13, .98, .12, 1.18);
-    const tire = new THREE.CylinderGeometry(.26, .26, .19, 12);
+    const forklift = new THREE.Group();
+    const carriage = new THREE.Group();
+    const load = new THREE.Group();
+    forklift.add(carriage);
+    scene.add(forklift, load);
+    movingBox(forklift, yellow, 0, .49, 0, 1.12, .64, 1.43);
+    movingBox(forklift, rubber, 0, .85, .22, .55, .16, .53);
+    movingBox(forklift, steel, 0, 1.77, .2, 1.08, .13, 1.18);
+    const beacon = new THREE.MeshBasicMaterial({ color: 0xffb12e });
+    movingBox(forklift, beacon, .34, 1.89, .32, .14, .13, .14);
+    const tire = new THREE.CylinderGeometry(.26, .26, .19, 14);
     for (const side of [-1, 1]) {
-        box(navy, 4.2 + side * .4, 1.2, 2.65, .075, .96, .075);
-        box(steel, 4.2 + side * .39, .89, 1.24, .078, 1.69, .09);
-        box(steel, 4.2 + side * .25, .18, .8, .08, .076, .84);
-        for (const z of [1.5, 2.48]) {
+        movingBox(forklift, navy, side * .45, 1.24, .56, .085, 1.07, .085);
+        movingBox(forklift, steel, side * .39, 1.08, -.72, .085, 2.03, .095);
+        movingBox(carriage, navy, side * .32, .18, -.82, .095, .34, .11);
+        movingBox(carriage, steel, side * .32, .093, -1.27, .095, .07, .98);
+        for (const z of [-.49, .49]) {
             const wheel = new THREE.Mesh(tire, rubber);
             wheel.rotation.z = Math.PI / 2;
-            wheel.position.set(4.2 + side * .58, .26, z);
-            scene.add(wheel);
+            wheel.position.set(side * .64, .26, z);
+            forklift.add(wheel);
+        }
+        movingBox(load, wood, side * .4, .08, 0, .15, .16, .95);
+        movingBox(load, lightKraft, side * .27, .42, 0, .49, .5, .7);
+        movingBox(load, tape, side * .27, .673, 0, .05, .012, .71);
+        movingBox(load, white, side * .27 + .11, .48, .356, .12, .08, .012);
+    }
+    movingBox(load, wood, 0, .17, 0, 1.14, .065, .94);
+
+    for (const side of [-1, 1]) {
+        const x = side * 6.8;
+        for (const dx of [-.68, .68]) for (const z of [1.35, 6.9]) box(navy, x + dx, 2.19, z, .09, 4.38, .09);
+        for (const y of [1.68, 2.62, 3.56]) {
+            box(steel, x, y, 4.13, 1.42, .11, 5.63);
+            box(yellow, x - side * .72, y, 4.13, .05, .14, 5.63);
+            for (const z of [1.85, 2.84, 3.83, 4.82, 5.81, 6.55]) carton(x, y + .06, z, 1.08, .61, .66, z > 4);
         }
     }
 
@@ -178,15 +243,25 @@ async function startJourney() {
     for (const z of [-13.78, -12.82]) box(navy, 0, .88, z, 6, .12, .08);
     for (let x = -2.83; x <= 2.83; x += .18) box(steel, x, .85, -13.3, .103, .11, .91);
     for (const x of [-2.45, 2.45]) box(navy, x, .36, -13.3, .14, .72, .78);
-    const parcel = new THREE.Group();
-    movingBox(parcel, lightKraft, 0, 0, 0, .74, .49, .63);
-    movingBox(parcel, tape, 0, .25, 0, .09, .015, .63);
-    movingBox(parcel, white, .14, .065, .321, .22, .13, .012);
-    scene.add(parcel);
+    const parcels = Array.from({ length: 3 }, (_, i) => {
+        const parcel = new THREE.Group();
+        const width = .58 + i * .085;
+        movingBox(parcel, i === 1 ? kraft : lightKraft, 0, 0, 0, width, .44, .62);
+        movingBox(parcel, tape, 0, .225, 0, .085, .01, .62);
+        movingBox(parcel, white, .13, .065, .316, .19, .12, .01);
+        scene.add(parcel);
+        return parcel;
+    });
+    for (const x of [-2.96, 2.96]) {
+        box(navy, x, 1.13, -13.3, .82, .73, 1);
+        box(violet, x, 1.52, -12.79, .45, .035, .026);
+    }
 
     for (const [paint, matrices] of transforms) {
         const batch = new THREE.InstancedMesh(geometry, paint, matrices.length);
         matrices.forEach((matrix, i) => batch.setMatrixAt(i, matrix));
+        batch.castShadow = paint !== navy && paint !== concrete && paint !== shadow;
+        batch.receiveShadow = paint !== litPanel;
         batch.instanceMatrix.needsUpdate = true;
         scene.add(batch);
     }
@@ -212,29 +287,46 @@ async function startJourney() {
 
     // Each shot ends before the next doorway so the camera has a clear path.
     const shots = [
-        [0, 19, 17, 24, 0, 0, -3],
-        [.13, 8.5, 8.3, 17, 0, 1.2, 2.5],
+        [0, -.4, 2.15, 13.8, .2, 1.65, -8],
+        [.13, -.12, 2.06, 12.2, .15, 1.65, -4],
         [.26, 0, 2.35, 10.9, 0, 1.55, 4.5],
         [.36, 0, 2.1, 6.65, 2.4, 1.05, 2.9],
+        [.41, 0, 2.08, 7, 3.5, 1.15, 3.8],
         [.49, 0, 2.25, 1.65, .3, 1.16, -4],
         [.60, 0, 2.45, -2.6, 2.8, 1.2, -5.2],
         [.72, 0, 2.22, -5.8, .45, 1.1, -10.9],
         [.85, 0, 2.45, -8.75, 3.18, 1.12, -10.85],
-        [1, 2.5, 3.3, -9.85, .7, 1.22, -14.25]
+        [1, 1.05, 2.22, -10.7, .7, 1.21, -14.25]
     ];
     const lerp = THREE.MathUtils.lerp;
-    function updateStory(progress) {
+    function updateStory(progress, seconds) {
         const next = Math.max(1, shots.findIndex(shot => shot[0] >= progress));
         const from = shots[next - 1];
         const to = shots[next];
         const blend = THREE.MathUtils.smoothstep(progress, from[0], to[0]);
         const at = i => lerp(from[i], to[i], blend);
-        camera.position.set(at(1), at(2), at(3));
+        const intro = THREE.MathUtils.smoothstep(seconds, 0, 1.25);
+        camera.position.set(at(1), at(2), at(3) + (1 - intro) * (1 - THREE.MathUtils.smoothstep(progress, 0, .13)) * .95);
         target.set(at(4), at(5), at(6));
         camera.lookAt(target);
-        const opened = THREE.MathUtils.smoothstep(progress, .16, .32);
-        for (const { side, panel } of doors) panel.position.x = side * (.835 + opened * 1.8);
-        parcel.position.set(lerp(-2.5, 2.5, THREE.MathUtils.smoothstep(progress, .74, 1)), 1.145, -13.3);
+        const opened = Math.max(intro * .83, THREE.MathUtils.smoothstep(progress, .13, .32));
+        for (const { side, panel } of doors) panel.position.x = side * (1.15 + opened * 2.25);
+
+        const cycle = seconds % 18;
+        const smooth = THREE.MathUtils.smoothstep;
+        const outward = smooth(cycle, 2.4, 7.1);
+        const returning = smooth(cycle, 11.4, 16.1);
+        const raised = smooth(cycle, 1, 2.4) - smooth(cycle, 7.2, 8.6)
+            + smooth(cycle, 10, 11.4) - smooth(cycle, 16.2, 17.6);
+        forklift.position.set(4.05, 0, 5.1 - 2.45 * (outward - returning));
+        carriage.position.y = raised * .54;
+        load.position.set(forklift.position.x, carriage.position.y, forklift.position.z - 1.26);
+        beacon.color.setHex(seconds % 1.6 < .32 ? 0xffd387 : 0xab6a24);
+        parcels.forEach((parcel, index) => {
+            const phase = (seconds * .41 + index * 2.1) % 6.18;
+            parcel.position.set(phase - 3.09, 1.125, -13.3);
+            parcel.visible = phase > .17 && phase < 6.01;
+        });
         progressBar.style.transform = 'scaleX(' + progress + ')';
         setStage(chapterStarts.findLastIndex(start => progress >= start));
     }
@@ -242,6 +334,8 @@ async function startJourney() {
     const nav = document.querySelector('.stock-nav');
     let frame = 0;
     let previousProgress = -1;
+    let seconds = 0;
+    let previousTick = 0;
     let previousWidth = 0;
     let previousHeight = 0;
     let navOffset = 64;
@@ -254,9 +348,15 @@ async function startJourney() {
         }
     }
 
-    function render() {
+    function render(now) {
         frame = 0;
         if (!visible || stopped || document.hidden || reduceMotion.matches) return;
+        if (previousTick && now - previousTick < 30) {
+            scheduleFrame();
+            return;
+        }
+        if (previousTick) seconds += Math.min(now - previousTick, 45) / 1000;
+        previousTick = now;
         const nextNavOffset = Math.round(nav?.getBoundingClientRect().height || 64);
         if (nextNavOffset !== navOffset) {
             navOffset = nextNavOffset;
@@ -278,14 +378,13 @@ async function startJourney() {
 
         const distance = Math.max(1, root.offsetHeight - pin.offsetHeight);
         const progress = THREE.MathUtils.clamp((navOffset - root.getBoundingClientRect().top) / distance, 0, 1);
-        if (progress === previousProgress && !resized) return;
-        if (progress !== previousProgress) {
-            updateStory(progress);
-            previousProgress = progress;
-        }
+        const eased = previousProgress < 0 ? progress : lerp(previousProgress, progress, .28);
+        updateStory(Math.abs(progress - eased) < .0005 ? progress : eased, seconds);
+        previousProgress = eased;
         try {
             renderer.render(scene, camera);
             root.classList.add('sm-journey--drawn');
+            scheduleFrame();
         } catch (error) {
             stop();
             console.warn('Stock Mind is showing its static warehouse image.', error);
@@ -294,6 +393,7 @@ async function startJourney() {
 
     const viewport = new IntersectionObserver(([entry]) => {
         visible = entry.isIntersecting;
+        previousTick = 0;
         if (visible) scheduleFrame();
     });
     const layout = new ResizeObserver(scheduleFrame);
@@ -312,6 +412,7 @@ async function startJourney() {
         document.removeEventListener('visibilitychange', scheduleFrame);
         reduceMotion.removeEventListener('change', onMotionChange);
         canvas.removeEventListener('webglcontextlost', stop);
+        sun.shadow.dispose();
         renderer.dispose();
         const resources = new Set();
         scene.traverse(({ geometry, material }) => {

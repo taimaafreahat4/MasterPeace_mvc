@@ -156,6 +156,78 @@ async function startJourney() {
         box(navy, 0, 3.36, z, street ? 5 : 3.7, .22, .34);
         sign(name, 0, 3.64, z + .18, 2.62);
     }
+    // Three connected wings are exposed in sequence before the tour enters the main aisle.
+    const cladding = material(0x63738d, .18);
+    const roofMetal = material(0x8495ad, .3);
+    const glassBand = material(0x315373, .38);
+    const purpleBand = material(0x7754d5, .2);
+    const apron = material(0x58677e);
+    const concreteIsland = material(0x9ba9bc);
+    box(apron, 0, -.74, -2.2, 31.6, .24, 38.5);
+    box(concreteIsland, 0, -.59, 13.9, 22.5, .14, 7.3);
+    for (const x of [-6.4, -3.2, 3.2, 6.4]) {
+        box(white, x, -.512, 15.18, .075, .012, 4.3);
+        box(white, x + 1.35, -.511, 13.15, 2.6, .012, .08);
+    }
+    for (const x of [-9.95, 9.95]) {
+        box(concreteIsland, x, -.53, 9.45, 1.08, .12, 3.25);
+        box(steel, x, 1.62, 9.35, .1, 4.2, .1);
+        box(litPanel, x, 3.75, 9.46, .54, .075, .25);
+    }
+
+    function facilityWing(z, depth, height) {
+        const envelope = new THREE.Group();
+        const roof = new THREE.Group();
+        scene.add(envelope, roof);
+        for (const side of [-1, 1]) {
+            movingBox(envelope, cladding, side * 8.57, height / 2, z, .26, height, depth);
+            movingBox(envelope, glassBand, side * 8.72, height - .83, z, .035, .62, depth - .28);
+            movingBox(envelope, purpleBand, side * 8.74, height - 1.22, z, .045, .1, depth - .25);
+            for (let bay = 1; bay <= 4; bay++) {
+                const station = z - depth / 2 + bay * depth / 5;
+                movingBox(envelope, steel, side * 8.75, height - .83, station, .045, .68, .06);
+            }
+        }
+        movingBox(roof, roofMetal, 0, height, z, 17.78, .16, depth + .18);
+        for (const x of [-5.15, 0, 5.15]) {
+            movingBox(roof, cladding, x, height + .14, z, 1.7, .14, depth * .82);
+            movingBox(roof, glassBand, x, height + .225, z, 1.47, .035, depth * .75);
+        }
+        movingBox(roof, purpleBand, 0, height - .07, z + depth / 2 + .086, 17.62, .14, .05);
+        return { envelope, roof };
+    }
+
+    const wings = [
+        facilityWing(4.23, 7.85, 6.05),
+        facilityWing(-3.41, 7.38, 6.55),
+        facilityWing(-11.18, 8.1, 6.17)
+    ];
+    const facade = wings[0].envelope;
+    for (const side of [-1, 1]) {
+        movingBox(facade, cladding, side * 5.63, 3.02, 8.29, 6.07, 6.04, .27);
+        movingBox(facade, glassBand, side * 5.63, 4.36, 8.442, 5.51, 1.47, .042);
+        for (const gap of [-1.35, 0, 1.35]) {
+            movingBox(facade, steel, side * 5.63 + gap, 4.36, 8.477, .067, 1.56, .045);
+        }
+        movingBox(facade, steel, side * 5.68, 1.39, 8.43, 2.08, 2.06, .12);
+        for (let row = 1; row <= 6; row++) movingBox(facade, navy, side * 5.68, .41 + row * .27, 8.508, 2.05, .02, .019);
+    }
+    movingBox(facade, cladding, 0, 4.73, 8.26, 5.22, 2.64, .3);
+    movingBox(facade, purpleBand, 0, 5.83, 8.46, 17.16, .14, .12);
+    movingBox(facade, navy, 0, 3.49, 9.32, 5.45, .15, 2.16);
+    movingBox(facade, litPanel, 0, 3.4, 9.45, 3.78, .025, .12);
+    sign('STOCK MIND  |  LOGISTICS', 0, 4.72, 8.51, 4.48);
+
+    function revealWings(progress) {
+        wings.forEach(({ roof }, index) => {
+            const opened = THREE.MathUtils.smoothstep(progress, .07 + index * .024, .24 + index * .023);
+            roof.position.y = opened * (3.8 + index * .36);
+            roof.position.z = -opened * (index + 1) * .56;
+            roof.visible = opened < .8;
+
+        });
+    }
+
     doorway(8.15, 'STOCK MIND', true);
     doorway(.25, '02  STORAGE');
     doorway(-7.05, '03  PACKING');
@@ -457,9 +529,9 @@ async function startJourney() {
 
     // Each shot ends before the next doorway so the camera has a clear path.
     const shots = [
-        [0, -.4, 2.15, 13.8, .2, 1.65, -8],
-        [.055, -.8, 4.62, 13.2, 1.36, 1.48, 4.1],
-        [.14, -.5, 3.62, 11.6, 1.65, 1.39, 6.55],
+        [0, 17, 10.2, 32.8, 0, 2.7, -2.9],
+        [.085, 11, 8.9, 24.5, .4, 2.7, 1.5],
+        [.17, .85, 4.4, 14.8, .4, 1.74, 6.55],
         [.26, 0, 2.36, 9.46, 1.15, 1.38, 5.9],
         [.36, 0, 2.01, 6.65, 1.5, 1.12, 2.9],
         [.41, 0, 2.08, 7, 3.5, 1.15, 3.8],
@@ -483,6 +555,7 @@ async function startJourney() {
         camera.position.set(at(1), at(2), at(3) + (1 - intro) * (1 - THREE.MathUtils.smoothstep(progress, 0, .13)) * .95);
         target.set(at(4), at(5), at(6));
         camera.lookAt(target);
+        revealWings(progress);
         const opened = Math.max(intro * .83, THREE.MathUtils.smoothstep(progress, .13, .32));
         for (const { side, panel } of doors) panel.position.x = side * (1.15 + opened * 2.25);
 
@@ -559,8 +632,8 @@ async function startJourney() {
         previousProgress = eased;
         const inside = eased > .035;
         try {
-            if (inside || !root.classList.contains('sm-journey--drawn')) renderer.render(scene, camera);
-            root.classList.toggle('sm-journey--inside', inside);
+            renderer.render(scene, camera);
+            root.classList.add('sm-journey--inside');
             root.classList.add('sm-journey--drawn');
             if (inside || Math.abs(progress - eased) > .0005) scheduleFrame();
         } catch (error) {

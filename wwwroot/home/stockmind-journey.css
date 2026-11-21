@@ -102,3 +102,28 @@
 @media (prefers-reduced-motion: reduce) {
     .sm-journey__scene, .sm-journey__canvas { transition: none; }
 }
+.sm-journey__directory {
+    margin: 4px 8px 7px;
+    color: #c8b6ff;
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+.sm-journey__tour-controls { width: min(100%, 372px); }
+.sm-journey__chapters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+}
+.sm-journey__chapters button {
+    min-width: 0;
+    border: 1px solid #a0acd132;
+    border-radius: 7px;
+    padding-inline: 5px;
+    text-align: center;
+}
+.sm-journey__chapters button[aria-current="step"] {
+    border-color: #a47bff;
+    background: #5b36b9;
+}
+.sm-journey__chapters button:focus-visible { outline: 2px solid #c8b6ff; outline-offset: -3px; }

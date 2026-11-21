@@ -10,14 +10,14 @@ async function startJourney() {
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.18;
+    renderer.toneMappingExposure = 1.03;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, 1, .06, 90);
     const target = new THREE.Vector3();
-    scene.fog = new THREE.FogExp2(0xc1cde0, .028);
-    scene.add(new THREE.HemisphereLight(0xf4f8ff, 0x8d97af, 2));
-    const sun = new THREE.DirectionalLight(0xffe6ce, 2.05);
-    sun.position.set(8, 14, 10);
+    scene.fog = new THREE.FogExp2(0x53677c, .033);
+    scene.add(new THREE.HemisphereLight(0xc4dbff, 0x627188, 1.48));
+    const sun = new THREE.DirectionalLight(0xffd1a0, 2.25);
+    sun.position.set(5, 9, -18);
     sun.target.position.set(0, 0, -4);
     sun.castShadow = true;
     sun.shadow.mapSize.set(1024, 1024);
@@ -31,8 +31,8 @@ async function startJourney() {
     scene.add(sun, sun.target);
 
     const material = (color, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness: .76, metalness });
-    const concrete = material(0xc9d3e2), trim = material(0x8a9bb2), white = material(0xf1f4f9);
-    const navy = material(0x30445e, .25), steel = material(0x7488a0, .36);
+    const concrete = material(0x7e8b98, .08), trim = material(0x576579), white = material(0x9baabb);
+    const navy = material(0x26374e, .29), steel = material(0x586e85, .36);
     const kraft = material(0xb67c48), lightKraft = material(0xd6a26d), tape = material(0xe9be87);
     const wood = material(0x936d4d), violet = material(0x7858bb), yellow = material(0xf2b53f);
     const rubber = material(0x263141), screen = new THREE.MeshBasicMaterial({ color: 0x82b9df });
@@ -55,6 +55,7 @@ async function startJourney() {
     }
 
     concrete.map = grain(32, 25);
+    concrete.roughness = .48;
     const paper = grain(56, 19);
     kraft.map = paper;
     lightKraft.map = paper;
@@ -381,10 +382,12 @@ async function startJourney() {
         const eased = previousProgress < 0 ? progress : lerp(previousProgress, progress, .28);
         updateStory(Math.abs(progress - eased) < .0005 ? progress : eased, seconds);
         previousProgress = eased;
+        const inside = eased > .035;
         try {
-            renderer.render(scene, camera);
+            if (inside || !root.classList.contains('sm-journey--drawn')) renderer.render(scene, camera);
+            root.classList.toggle('sm-journey--inside', inside);
             root.classList.add('sm-journey--drawn');
-            scheduleFrame();
+            if (inside || Math.abs(progress - eased) > .0005) scheduleFrame();
         } catch (error) {
             stop();
             console.warn('Stock Mind is showing its static warehouse image.', error);
@@ -402,7 +405,7 @@ async function startJourney() {
         if (stopped) return;
         stopped = true;
         cancelAnimationFrame(frame);
-        root.classList.remove('sm-journey--ready', 'sm-journey--drawn');
+        root.classList.remove('sm-journey--ready', 'sm-journey--drawn', 'sm-journey--inside');
         setStage(0);
         viewport.disconnect();
         layout.disconnect();

@@ -2,7 +2,7 @@
     --sm-nav-height: 64px;
     isolation: isolate;
     color: white;
-    background: #e5eef9;
+    background: #101929;
 }
 .sm-journey--ready { min-height: 285svh; }
 .sm-journey__pin {
@@ -11,7 +11,7 @@
     display: grid;
     align-items: center;
     min-height: calc(100svh - var(--sm-nav-height));
-    background: #1d2e50 url('/home/images/warehouse-home.jpg') center 49% / cover no-repeat;
+    background: #0d1726 url('/home/images/warehouse-cinematic.jpg') 62% center / cover no-repeat;
 }
 .sm-journey--ready .sm-journey__pin { position: sticky; top: var(--sm-nav-height); min-height: calc(100svh - var(--sm-nav-height)); }
 .sm-journey__pin::after {
@@ -19,7 +19,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(90deg, #101a3afc, #101a3ad9 32%, #101a3a30 76%);
+    background: linear-gradient(90deg, #071123f2, #071123c9 26%, #07112338 61%, transparent 84%), linear-gradient(0deg, #08101f85, transparent 36%);
 }
 .sm-journey__canvas {
     position: absolute;
@@ -29,13 +29,9 @@
     display: block;
     opacity: 0;
     transition: opacity 360ms ease-out;
-    background: radial-gradient(ellipse at 72% 43%, #f7faff, #c8d8eb 72%, #a6bbd3);
+    background: radial-gradient(ellipse at 70% 45%, #596b81, #192437 80%);
 }
-.sm-journey--drawn { color: #142541; }
-.sm-journey--drawn .sm-journey__canvas { opacity: 1; }
-.sm-journey--drawn .sm-journey__pin::after {
-    background: linear-gradient(90deg, #eef4fc 0%, #eef4fcf5 23%, #eef4fccc 34%, #eef4fc00 57%);
-}
+.sm-journey--inside .sm-journey__canvas { opacity: 1; }
 .sm-journey__inner { position: relative; z-index: 1; padding-block: 48px; }
 .sm-journey__copy { display: grid; max-width: min(480px, 40%); }
 .sm-journey__scene {
@@ -58,8 +54,6 @@
 .sm-journey__scene em { color: #d1c1ff; font-style: normal; }
 .sm-journey__scene p { max-width: 360px; line-height: 1.6; color: #e9effc; }
 .sm-journey__scene .sm-journey__eyebrow { color: #ddd1ff; letter-spacing: .14em; font-size: .72rem; font-weight: 800; }
-.sm-journey--drawn .sm-journey__scene em, .sm-journey--drawn .sm-journey__scene .sm-journey__eyebrow { color: #5931b4; }
-.sm-journey--drawn .sm-journey__scene p { color: #233954; }
 .sm-journey__actions { margin-bottom: 14px; }
 .sm-journey__actions .front-button:not(.front-button--primary) { color: #172044; }
 .sm-journey__skip { display: inline-flex; gap: 6px; font-size: .82rem; color: inherit; text-decoration: underline; text-underline-offset: 4px; }
@@ -69,9 +63,9 @@
     max-width: 100%;
     margin-top: 28px;
     padding: 6px;
-    border: 1px solid #b6c6dc;
+    border: 1px solid #8499b65c;
     border-radius: 14px;
-    background: #f8fbff;
+    background: #101d32e8;
 }
 .sm-journey--drawn .sm-journey__tour-controls { display: block; }
 .sm-journey__chapters { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -80,21 +74,20 @@
     padding: 6px 9px;
     border: 0;
     border-radius: 8px;
-    color: #253b58;
+    color: #e0e9f7;
     background: transparent;
     font-size: .71rem;
     font-weight: 700;
     cursor: pointer;
 }
-.sm-journey__chapters button:hover { background: #ece6ff; }
+.sm-journey__chapters button:hover { background: #253651; }
 .sm-journey__chapters button[aria-current="step"] { background: #5931b4; color: white; }
-.sm-journey__progress { height: 3px; margin: 5px 3px 1px; border-radius: 4px; background: #d6dfef; }
-.sm-journey__progress i { height: 100%; display: block; transform: scaleX(0); transform-origin: left; background: #6333c5; }
+.sm-journey__progress { height: 3px; margin: 5px 3px 1px; border-radius: 4px; background: #36485f; }
+.sm-journey__progress i { height: 100%; display: block; transform: scaleX(0); transform-origin: left; background: #bc9bff; }
 .sm-journey:not(.sm-journey--ready) .sm-journey__scene:not(.is-active) { display: none; }
 @media (max-width: 710px) {
     .sm-journey--ready { min-height: 250svh; }
     .sm-journey__pin::after { background: linear-gradient(0deg, #0b1436 5%, #101a3ae8 42%, #13214825 85%); }
-    .sm-journey--drawn .sm-journey__pin::after { background: linear-gradient(0deg, #edf3fc 15%, #edf3fcf7 37%, #edf3fc8c 64%, #edf3fc00 82%); }
     .sm-journey__inner { align-self: end; padding-block: 26px 30px; }
     .sm-journey__copy { max-width: 100%; }
     .sm-journey__scene h1, .sm-journey__scene h2 { font-size: clamp(2.1rem, 7.8vw, 3.4rem); }

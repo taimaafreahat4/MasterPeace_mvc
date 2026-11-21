@@ -1,8 +1,7 @@
 @model LandingViewModel
 @{
     Layout = null;
-    var sellLink = User.IsInRole("seller") ? "/Seller/Listings" :
-        User.Identity?.IsAuthenticated == true ? "/Home/About#how-it-works" : "/Account/Register?seller=true";
+    var sellLink = User.IsInRole("seller") ? "/Seller/Listings" : User.Identity?.IsAuthenticated == true ? "/Home/About#how-it-works" : "/Account/Register?seller=true";
     var featured = new[]
     {
         (Names: new[] { "Electronics" }, Image: "/catalog/headphones.jpg", Position: "center"),
@@ -19,14 +18,14 @@
     <title>Stock Mind | Wholesale Marketplace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@@400;500;600;700;800&family=Space+Grotesk:wght@@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/home/style.css">
     <link rel="stylesheet" href="/css/stock-brand.css">
     <link rel="stylesheet" href="/components/footer.css">
     <link rel="stylesheet" href="/responsive.css?v=site-responsive-2">
     <link rel="stylesheet" href="/home/storefront-home.css" asp-append-version="true">
     <link rel="preload" as="image" href="/home/images/warehouse-cinematic.jpg">
-    <link rel="stylesheet" href="/home/stockmind-journey.css" asp-append-version="true">
+    <link rel="stylesheet" href="/home/warehouse-tower.css" asp-append-version="true">
 </head>
 <body class="storefront-home">
 <partial name="_StockNavigation" />
@@ -35,42 +34,7 @@
     <p class="stock-home-notice" role="status">@notice</p>
 }
 <main id="home">
-    <section class="sm-journey" aria-label="Stock Mind warehouse tour">
-        <div class="sm-journey__pin">
-            <canvas class="sm-journey__canvas" aria-hidden="true"></canvas>
-            <div class="sm-journey__inner front-shell">
-                <div class="sm-journey__copy">
-                    <div class="sm-journey__scene is-active" data-scene="0">
-                        <p class="sm-journey__eyebrow">THE WHOLESALE MARKETPLACE</p>
-                        <h1>Find stock.<br><em>Move surplus.</em></h1>
-                        <p>Buy wholesale in the quantities you need, or list excess inventory for other businesses to discover.</p>
-                    </div>
-                    <div class="sm-journey__scene" data-scene="1" inert><p class="sm-journey__eyebrow">LOADING DOCK</p><h2>Through the<br><em>loading doors.</em></h2><p>Enter the Stock Mind logistics hub through its main loading dock.</p></div>
-                    <div class="sm-journey__scene" data-scene="2" inert><p class="sm-journey__eyebrow">RECEIVING</p><h2>Check stock<br><em>as it arrives.</em></h2><p>Incoming cartons are counted and staged on pallets before they go into storage.</p></div>
-                    <div class="sm-journey__scene" data-scene="3" inert><p class="sm-journey__eyebrow">STORAGE</p><h2>Find the stock<br><em>you need.</em></h2><p>Follow guided carts between the labeled shelves as they move cartons to the next station.</p></div>
-                    <div class="sm-journey__scene" data-scene="4" inert><p class="sm-journey__eyebrow">PACKING</p><h2>Picked, packed<br><em>and labeled.</em></h2><p>Robotic pickers sort cartons at the packing bench and send them along the conveyor.</p></div>
-                    <div class="sm-journey__scene" data-scene="5" inert><p class="sm-journey__eyebrow">DISPATCH</p><h2>Ready for its<br><em>next stop.</em></h2><p>Sealed cartons head out to the businesses that ordered them.</p></div>
-                </div>
-                <div class="front-actions sm-journey__actions">
-                    <a class="front-button front-button--primary" asp-controller="Market" asp-action="Index">Browse marketplace <span aria-hidden="true">&#8599;</span></a>
-                    <a class="front-button" href="@sellLink">@(User.IsInRole("seller") ? "Manage listings" : "Sell your stock") <span aria-hidden="true">&#8594;</span></a>
-                </div>
-                <a class="sm-journey__skip" href="#categories">Skip to categories <span aria-hidden="true">&#8595;</span></a>
-                <div class="sm-journey__tour-controls">
-                    <p class="sm-journey__directory">WAREHOUSE DIRECTORY</p>
-                    <nav class="sm-journey__chapters" aria-label="Warehouse building directory">
-                        <button type="button" data-tour-step="0" aria-current="step">Building</button>
-                        <button type="button" data-tour-step="1">Entrance</button>
-                        <button type="button" data-tour-step="2">Receiving</button>
-                        <button type="button" data-tour-step="3">Storage</button>
-                        <button type="button" data-tour-step="4">Packing</button>
-                        <button type="button" data-tour-step="5">Dispatch</button>
-                    </nav>
-                    <div class="sm-journey__progress" aria-hidden="true"><i></i></div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <partial name="_WarehouseTower" />
     <section class="front-categories front-shell" id="categories" aria-labelledby="front-categories-title">
         <header class="front-section-heading">
             <div><p class="front-kicker">MARKETPLACE</p><h2 id="front-categories-title">Shop by category</h2></div>
@@ -109,7 +73,8 @@
     <partial name="_Testimonials" model="Model.Feedback" />
 </main>
 <partial name="_StockFooter" />
-<script type="module" src="/home/stockmind-journey.js" asp-append-version="true"></script>
+<script defer src="/lib/three-r128/three.min.js"></script>
+<script defer src="/home/warehouse-tower.js" asp-append-version="true"></script>
 <script type="module" src="/home/mvc-home.js"></script>
 </body>
 </html>

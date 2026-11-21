@@ -1,0 +1,62 @@
+@{
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var seller = User.IsInRole("seller");
+    var sellLink = seller ? "/Seller/Listings" : signedIn ? "/Home/About#how-it-works" : "/Account/Register?seller=true";
+    var manageLink = seller ? "/Seller/Tools" : "/Home/About#how-it-works";
+    var startLink = seller ? "/Seller" : signedIn ? "/Market" : "/Account/Login";
+}
+<section class="stock-tower" id="stock-tower-track" aria-label="Stock Mind warehouse tower">
+<div id="stock-tower-app">
+  <div id="stock-tower-stage"></div>
+  <div id="stock-tower-nogl" hidden>
+    <p>This 3D view needs WebGL, which isn't available in this browser. Use the level buttons to read about each floor.</p>
+  </div>
+  <div class="hud hud-top" id="stock-tower-hudTop">
+    <div class="intro">
+      <p class="eyebrow">Stock Mind &middot; Warehouse concept</p>
+      <h1>Five levels. One inventory.</h1>
+      <p>Follow one package from the conveyor into the tower, then ride the lift up through every floor.</p>
+    </div>
+    <div class="tower-top-links"><p class="hint" id="stock-tower-hint">Scroll to enter the warehouse</p><a class="tower-skip" href="#categories">Skip to categories &#8595;</a></div>
+  </div>
+  <div class="tower-stories" aria-label="Stock Mind features">
+    <article class="tower-story" data-tower-story="sorting" hidden>
+      <p class="eyebrow">Smart sorting</p>
+      <h2>Know what to keep.<br><em>Know what to sell.</em></h2>
+      <p>One clear decision turns surplus into opportunity.</p>
+      <div class="tower-story__actions">
+        <a href="@manageLink">Keep &amp; Manage</a>
+        <a href="@sellLink">Sell Surplus</a>
+      </div>
+    </article>
+    <article class="tower-story" data-tower-story="marketplace" hidden>
+      <p class="eyebrow">Marketplace</p>
+      <h2>One seller&rsquo;s surplus.<br><em>Another seller&rsquo;s opportunity.</em></h2>
+      <p>Move the right stock to the business that needs it.</p>
+      <div class="tower-story__flow"><span>Seller A</span><strong>Stock Mind Marketplace</strong><span>Seller B</span></div>
+      <div class="tower-story__options">
+        <a asp-controller="Market" asp-action="Index" asp-route-offer="regular"><b>Buy by Quantity</b><span>Choose the units you need.</span></a>
+        <a asp-controller="Market" asp-action="Index" asp-route-offer="whole_lot"><b>Whole Lot</b><span>Purchase the complete lot.</span></a>
+      </div>
+    </article>
+    <article class="tower-story" data-tower-story="brand" hidden>
+      <p class="eyebrow tower-story__brand"><img src="/components/logo.png" alt="" width="32" height="32"> Stock Mind</p>
+      <h2>Smarter inventory.<br><em>Stronger business.</em></h2>
+      <p>Analyze smarter. Manage better. Trade with confidence.</p>
+      <div class="tower-story__actions">
+        <a href="@startLink">Get Started <span aria-hidden="true">&#8599;</span></a>
+        <a asp-controller="Market" asp-action="Index">Explore Marketplace <span aria-hidden="true">&#8599;</span></a>
+      </div>
+    </article>
+  </div>
+  <div class="hud hud-bottom">
+    <div class="detail" id="stock-tower-detail" aria-live="polite">
+      <p class="lvl" id="stock-tower-d-lvl">Overview</p>
+      <h2 id="stock-tower-d-name">The whole tower</h2>
+      <p id="stock-tower-d-desc">Five storage levels stacked above one receiving floor, with the conveyor feeding goods in at the base.</p>
+    </div>
+    <div class="levels" id="stock-tower-levels" role="group" aria-label="Jump to a level"></div>
+  </div>
+  <div class="rail" aria-hidden="true"><i id="stock-tower-railFill"></i></div>
+</div>
+</section>
